@@ -109,6 +109,12 @@ POST devuelve 201 y Location. Repetir la misma clave y datos reproduce el result
 otros datos con la misma clave devuelven 409. Un usuario sin membresía recibe 404
 al consultar el UUID de otra empresa, incluso si tiene company:provision.
 
+## Cliente Angular
+
+Para usar el flujo desde la interfaz sigue la [guía del frontend](run-frontend.md).
+El cliente de navegador worksoft-web usa Authorization Code + PKCE y requiere
+importación si el realm ya existía. No utiliza el cliente local de password grant.
+
 ## Alcance implementado
 
 Creación, consulta individual, listado paginado, roles de lectura ADMIN/READER,

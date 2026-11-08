@@ -1,0 +1,8 @@
+{
+  "apiBaseUrl": "/api/v1",
+  "keycloak": {
+    "url": "http://localhost:8080",
+    "realm": "worksoft-local",
+    "clientId": "worksoft-web"
+  }
+}

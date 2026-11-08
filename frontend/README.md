@@ -1,3 +1,6 @@
-# Frontend
+# Frontend WorkSoft
 
-Angular se inicializará en su fase correspondiente, fijando su versión LTS y Node.js compatible. Localización prevista: es-CO, COP y America/Bogota.
+La aplicación Angular está en [worksoft-web](worksoft-web). Incluye acceso con
+Keycloak, listado, registro y detalle de empresas contra la API existente.
+
+Seguir la [guía de ejecución](../docs/run-frontend.md).

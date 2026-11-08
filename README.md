@@ -9,6 +9,11 @@ Primer flujo implementado: crear, listar y consultar empresas con arquitectura
 hexagonal, PostgreSQL, Flyway y autorización JWT/OIDC. Incluye aislamiento por
 membresía, idempotencia, auditoría y outbox transaccional.
 
+## Frontend Angular
+
+Aplicación de acceso y gestión de empresas disponible en `frontend/worksoft-web`.
+Seguir la [guía del frontend](docs/run-frontend.md) para conectar Keycloak y la API.
+
 ## Inicio rápido
 
 Requiere JDK 25 y Docker. Primero configura PostgreSQL, Keycloak y las variables

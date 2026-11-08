@@ -1,0 +1,65 @@
+@if (auth.authenticated()) {
+  <a class="skip-link" href="#main-content">Saltar al contenido</a>
+  <div class="workspace">
+    <aside class="sidebar">
+      <a class="brand" routerLink="/empresas"
+        ><span class="brand-symbol">W</span>WorkSoft<span class="brand-dot">.</span></a
+      >
+      <div class="workspace-label">
+        <span class="workspace-tile">WS</span>
+        <div><strong>Mi espacio de trabajo</strong><span>Gestión empresarial</span></div>
+      </div>
+      <span class="nav-label">PRINCIPAL</span>
+      <nav aria-label="Navegación principal">
+        <a class="nav-item" routerLink="/empresas" routerLinkActive="active"
+          ><app-icon /> Empresas <span class="nav-indicator"></span
+        ></a>
+      </nav>
+      <div class="sidebar-note">
+        <span class="eyebrow">PASO A PASO</span>
+        <p>Una base organizada para hacer crecer tu operación.</p>
+        <span class="note-line"></span>
+      </div>
+      <div class="sidebar-bottom">
+        <span class="colombia-flag" aria-hidden="true"></span> Colombia
+        <span class="country-code">CO</span>
+      </div>
+    </aside>
+    <div class="workspace-main">
+      <header class="topbar">
+        <span class="breadcrumb">Mi espacio <span>/</span> <strong>Empresas</strong></span>
+        <div class="user-actions">
+          <span class="user-avatar">{{ auth.initials() }}</span
+          ><span class="user-name">{{ auth.username() }}</span
+          ><button class="icon-button" aria-label="Cerrar sesión" (click)="auth.logout()">
+            <app-icon name="logout" />
+          </button>
+        </div>
+      </header>
+      <main id="main-content" class="page-content">
+        @if (notices.message()) {
+          <div class="alert success" role="status">
+            <app-icon name="check" />{{ notices.message()
+            }}<button
+              class="text-button"
+              (click)="notices.clear()"
+              aria-label="Cerrar notificación"
+            >
+              Cerrar
+            </button>
+          </div>
+        }
+        @if (auth.error()) {
+          <div class="alert error" role="alert">{{ auth.error() }}</div>
+        }
+        <router-outlet />
+      </main>
+      <footer class="page-footer">
+        <span>WorkSoft · Gestión empresarial</span
+        ><span>Español (Colombia) <span class="footer-dot">·</span> America/Bogota</span>
+      </footer>
+    </div>
+  </div>
+} @else {
+  <app-welcome />
+}
