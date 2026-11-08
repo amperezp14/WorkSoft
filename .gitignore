@@ -1,0 +1,13 @@
+# Build e IDE
+**/target/
+**/node_modules/
+**/dist/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+# Configuración local y secretos
+.env
+.env.*
+!.env.example
+*.log
