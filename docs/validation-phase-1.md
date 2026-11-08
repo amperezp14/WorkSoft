@@ -20,3 +20,11 @@ entorno y no se incorporan al proyecto. No se usó Java 21 para compilar.
 Las reglas de arquitectura verifican el esqueleto documentado; aún no existen
 casos de uso de negocio. No se ha validado cumplimiento fiscal ni desplegado
 ningún servicio en producción.
+
+## Ajuste de compatibilidad Maven
+
+El Wrapper se cambió de Maven 3.10.0 a 3.9.16 tras un error reportado de
+Guice/MissingImplementation para ArtifactHandlerManager. Con JDK 25 y Maven
+3.9.16, clean verify terminó en BUILD SUCCESS: 4 pruebas sin fallos ni errores.
+No se reprodujo el fallo dentro del IDE del usuario; si persiste debe comprobarse
+qué distribución de Maven y qué extensiones está usando el IDE.

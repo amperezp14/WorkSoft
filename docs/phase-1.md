@@ -61,3 +61,17 @@ No hay aún pruebas de negocio porque no hay comportamiento de negocio.
 Sin base de datos, usuarios, Angular, contenedores, pipeline Jenkins ni despliegue.
 No exponer a Internet como aplicación empresarial: falta implementar seguridad.
 Los siguientes módulos deben seguir docs/architecture/colombia.md.
+
+## Importación en IntelliJ IDEA
+
+Abrir services/company-service/pom.xml como proyecto Maven. Configurar JDK 25
+para el proyecto, el importador Maven y Maven Runner. En Maven settings seleccionar
+Use Maven wrapper, desactivar Work offline y recargar todos los proyectos Maven.
+
+Si aparece Guice/MissingImplementation para ArtifactHandlerManager, el fallo se
+produce al inicializar Maven o su integración, antes de compilar Java. El Wrapper
+usa Maven 3.9.16 para evitar depender de la integración del IDE con Maven 3.10.
+Ejecutar primero ./mvnw --version y ./mvnw -U clean verify desde el servicio.
+En Windows usar .\mvnw.cmd. Si la terminal funciona pero el IDE falla, comprobar
+la versión del IDE y las extensiones Maven; actualizar el IDE y recargar el proyecto.
+No añadir Guice ni ArtifactHandlerManager como dependencias de la aplicación.

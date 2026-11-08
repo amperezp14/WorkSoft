@@ -10,7 +10,7 @@ servicio de empresas; los demás límites se validarán con procesos reales.
 ## Decisión
 
 - Monorepositorio y unidades de construcción y despliegue independientes.
-- Java 25 LTS, Spring Boot 4.1.2, Maven 3.10.0 mediante Wrapper.
+- Java 25 LTS, Spring Boot 4.1.2, Maven 3.9.16 mediante Wrapper.
 - Arquitectura hexagonal, inicialmente con un módulo Maven por servicio.
 - Dominio y aplicación sin dependencias de Spring, JPA, HTTP ni adaptadores.
 - Spring compone las implementaciones en la capa externa.
