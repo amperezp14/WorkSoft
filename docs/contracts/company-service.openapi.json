@@ -1,0 +1,465 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "WorkSoft — Empresas",
+    "version": "1.0.0",
+    "description": "Contrato de diseño para fase 3; endpoints aún no implementados. Colombia, personas jurídicas. Los patrones de NIT son límites técnicos, no validación DIAN."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8081",
+      "description": "Desarrollo local futuro; usar HTTPS fuera del entorno local."
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/v1/companies": {
+      "post": {
+        "operationId": "createCompany",
+        "summary": "Registrar empresa y membresía inicial",
+        "description": "Requiere company:provision. Empresa, membresía, idempotencia, auditoría y outbox se guardan atómicamente. Una repetición autorizada idéntica devuelve el mismo 201 y Location durante al menos 24 horas. Consultar docs/phase-2.md.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCompanyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Empresa creada o reproducción idempotente autorizada.",
+            "headers": {
+              "Location": {
+                "description": "Ruta /api/v1/companies/{companyId}.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri-reference"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Company"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada o cursor inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access token ausente o inválido.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Falta permiso de aprovisionamiento.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflicto de NIT o idempotencia; sin información de otra empresa.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Operación temporalmente no disponible; reintentar con la misma clave.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "description": "Espera en segundos."
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listMyCompanies",
+        "summary": "Listar empresas con membresía activa del actor",
+        "description": "Orden ascendente por createdAt e id. El cursor se liga al issuer, subject y limit, expira a los 15 minutos y se revalida la membresía en cada página. No es una instantánea transaccional entre páginas.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Página autorizada; puede estar vacía.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada o cursor inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access token ausente o inválido.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Operación temporalmente no disponible; reintentar con la misma clave.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "description": "Espera en segundos."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/companies/{companyId}": {
+      "get": {
+        "operationId": "getCompany",
+        "summary": "Consultar empresa autorizada",
+        "description": "Requiere membresía activa ADMIN o READER. La ausencia de membresía y una empresa inexistente producen el mismo 404.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "companyId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empresa accesible.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Company"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada o cursor inválidos.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access token ausente o inválido.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Empresa no accesible o inexistente.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Operación temporalmente no disponible; reintentar con la misma clave.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "description": "Espera en segundos."
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Access token OIDC con issuer y audience configurados. Identidad por issuer + subject. Roles empresariales se comprueban en membresías."
+      }
+    },
+    "schemas": {
+      "CreateCompanyRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "legalName",
+          "nit",
+          "verificationDigit"
+        ],
+        "properties": {
+          "legalName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "\\S",
+            "description": "Se eliminan espacios exteriores; un resultado vacío se rechaza."
+          },
+          "nit": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}$"
+          },
+          "verificationDigit": {
+            "type": "string",
+            "pattern": "^[0-9]$"
+          }
+        }
+      },
+      "Company": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "legalName",
+          "nit",
+          "verificationDigit",
+          "country",
+          "currency",
+          "timeZone",
+          "status",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "legalName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "nit": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}$"
+          },
+          "verificationDigit": {
+            "type": "string",
+            "pattern": "^[0-9]$"
+          },
+          "country": {
+            "type": "string",
+            "const": "CO"
+          },
+          "currency": {
+            "type": "string",
+            "const": "COP"
+          },
+          "timeZone": {
+            "type": "string",
+            "const": "America/Bogota"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Instante UTC con sufijo Z."
+          }
+        }
+      },
+      "CompanyPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Company"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Cursor opaco firmado, ligado a actor y parámetros; nulo cuando termina la página."
+          }
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri-reference"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
+          "code": {
+            "type": "string",
+            "description": "Código estable: VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, COMPANY_NOT_FOUND, COMPANY_CONFLICT, IDEMPOTENCY_CONFLICT o TEMPORARILY_UNAVAILABLE."
+          },
+          "detail": {
+            "type": "string",
+            "description": "Mensaje seguro en es-CO sin valores sensibles."
+          },
+          "instance": {
+            "type": "string",
+            "format": "uri-reference"
+          },
+          "correlationId": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

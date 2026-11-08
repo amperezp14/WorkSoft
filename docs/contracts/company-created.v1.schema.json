@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.worksoft.example/company-created.v1.schema.json",
+  "title": "CompanyCreated v1 — CloudEvents estructurado JSON",
+  "description": "Contrato de diseño; ID y URI de esquema identificativos, sin hosting publicado. Sin datos tributarios ni personales.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "specversion",
+    "id",
+    "source",
+    "type",
+    "subject",
+    "time",
+    "datacontenttype",
+    "data"
+  ],
+  "properties": {
+    "specversion": {
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "const": "urn:worksoft:company-service"
+    },
+    "type": {
+      "const": "com.worksoft.company.created.v1"
+    },
+    "subject": {
+      "type": "string",
+      "pattern": "^companies/[0-9a-fA-F-]{36}$",
+      "description": "companies/{companyId}; debe coincidir con data.companyId."
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Instante UTC de generación dentro de la transacción; solo se publica tras confirmar y permanece estable en reintentos."
+    },
+    "datacontenttype": {
+      "const": "application/json"
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "companyId",
+        "status"
+      ],
+      "properties": {
+        "companyId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "const": "ACTIVE"
+        }
+      }
+    }
+  }
+}

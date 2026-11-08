@@ -5,7 +5,7 @@ diseñada para el entorno empresarial y la normativa colombiana.
 
 ## Estado
 
-Fase 1: base del servicio de empresas con Java 25 LTS, Spring Boot 4.1.2 y
+Fase 1 implementada y fase 2 de diseño documentada: base del servicio de empresas con Java 25 LTS, Spring Boot 4.1.2 y
 arquitectura hexagonal. El esqueleto aún no implementa operaciones del ERP.
 
 ## Inicio rápido
@@ -24,6 +24,7 @@ En Windows usar `mvnw.cmd`.
 ## Documentación
 
 - [Guía de la fase 1](docs/phase-1.md)
+- [Diseño y contratos de la fase 2](docs/phase-2.md)
 - [Decisión arquitectónica](docs/adr/0001-base-arquitectonica.md)
 - [Contexto colombiano](docs/architecture/colombia.md)
 
