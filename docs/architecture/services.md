@@ -12,7 +12,7 @@
 | Notificaciones | Entregas y preferencias aplicables | Consume eventos; minimiza información personal. |
 | Informes | Proyecciones de lectura | Sin consultas SQL directas a otras bases; reconoce retraso de actualización. |
 
-Solo existe el esqueleto de Empresas. Los demás son límites propuestos; nómina,
+Empresas implementa creación y consulta autorizadas. Los demás son límites propuestos; nómina,
 compras y contabilidad requieren análisis propio antes de crear servicios.
 El gateway enruta y puede validar tokens, pero los servicios verifican identidad
 y autorización. No se comparten esquemas JPA, tablas ni repositorios entre servicios.
@@ -27,7 +27,7 @@ Eventos para hechos ya confirmados: CompanyCreated v1 es el primero definido.
 Se escribe outbox en la misma transacción local que el negocio y se publica
 después de confirmar. Entrega al menos una vez: event id estable en reintentos,
 consumidores idempotentes, reintentos limitados y cola de errores cuando exista
-broker. No se promete exactamente una vez ni orden global. No hay broker en fase 2.
+broker. No se promete exactamente una vez ni orden global. No hay broker en este incremento.
 Un cambio incompatible del payload crea otro tipo/versionado de evento.
 
 No se crea una transacción distribuida para coordinar inventario, ventas y

@@ -1,13 +1,14 @@
 # Fase 2 — Diseño funcional y contratos
 
-Estado: diseño inicial documentado; implementación pendiente para la fase 3.
+Estado: diseño de referencia. El primer flujo ya está implementado; consultar
+[ejecución](run-company-service.md) y [decisiones concretas](adr/0003-implementacion-empresas.md).
 
 ## Objetivo y alcance
 
 Definir un flujo verificable: un operador autorizado registra una empresa
 colombiana, obtiene membresía ADMIN y consulta únicamente las empresas a las
-que tiene acceso. No hay controladores, base de datos ni autorización funcional
-implementados todavía; OpenAPI describe el comportamiento futuro.
+que tiene acceso. Este documento conserva el diseño inicial. Los controladores, persistencia y
+autorización del primer flujo se describen en la guía de ejecución.
 
 Hipótesis inicial: una empresa persona jurídica colombiana corresponde a un
 ámbito de aislamiento (tenant). Los establecimientos y sucursales pertenecen a
@@ -153,7 +154,7 @@ Los DTO, entidades de dominio y modelos JPA son independientes.
 
 Están definidos alcance, flujo, propiedad de datos, amenazas de acceso,
 contratos versionados y escenarios de aceptación. Los documentos no acreditan
-cumplimiento legal ni comportamiento implementado. No se ha avanzado a fase 3.
+cumplimiento legal ni comportamiento implementado. El incremento posterior implementa el primer flujo; ver ADR 0003.
 
 ## Validación documental realizada
 

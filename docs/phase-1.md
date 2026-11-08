@@ -1,5 +1,8 @@
 # Fase 1 — Base técnica
 
+Nota: esta guía describe el esqueleto histórico. El servicio actual necesita
+PostgreSQL y configuración de seguridad; seguir [ejecución](run-company-service.md).
+
 ## Requisitos
 
 Git y un JDK 25 en JAVA_HOME y PATH. Maven se descarga mediante Wrapper y se

@@ -3,12 +3,12 @@
   "info": {
     "title": "WorkSoft — Empresas",
     "version": "1.0.0",
-    "description": "Contrato de diseño para fase 3; endpoints aún no implementados. Colombia, personas jurídicas. Los patrones de NIT son límites técnicos, no validación DIAN."
+    "description": "Contrato del primer flujo implementado. Colombia, personas jurídicas. Validación estructural de NIT/DV; sin validación DIAN."
   },
   "servers": [
     {
       "url": "http://localhost:8081",
-      "description": "Desarrollo local futuro; usar HTTPS fuera del entorno local."
+      "description": "Desarrollo local; usar HTTPS fuera del entorno local."
     }
   ],
   "security": [

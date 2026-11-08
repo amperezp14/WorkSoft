@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.worksoft.example/company-created.v1.schema.json",
   "title": "CompanyCreated v1 — CloudEvents estructurado JSON",
-  "description": "Contrato de diseño; ID y URI de esquema identificativos, sin hosting publicado. Sin datos tributarios ni personales.",
+  "description": "Evento escrito en outbox por el primer flujo. ID y URI de esquema identificativos, sin hosting publicado. Sin datos tributarios ni personales.",
   "type": "object",
   "additionalProperties": false,
   "required": [

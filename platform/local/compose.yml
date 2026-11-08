@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:17.6
+    environment:
+      POSTGRES_DB: worksoft
+      POSTGRES_USER: worksoft
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - company-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U worksoft -d worksoft"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.7
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USERNAME:?Define KC_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:?Define KC_ADMIN_PASSWORD}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./worksoft-realm.json:/opt/keycloak/data/import/worksoft-realm.json:ro
+      - identity-data:/opt/keycloak/data
+volumes:
+  company-data:
+  identity-data:

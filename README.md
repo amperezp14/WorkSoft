@@ -5,12 +5,14 @@ diseñada para el entorno empresarial y la normativa colombiana.
 
 ## Estado
 
-Fase 1 implementada y fase 2 de diseño documentada: base del servicio de empresas con Java 25 LTS, Spring Boot 4.1.2 y
-arquitectura hexagonal. El esqueleto aún no implementa operaciones del ERP.
+Primer flujo implementado: crear, listar y consultar empresas con arquitectura
+hexagonal, PostgreSQL, Flyway y autorización JWT/OIDC. Incluye aislamiento por
+membresía, idempotencia, auditoría y outbox transaccional.
 
 ## Inicio rápido
 
-Requiere JDK 25. Desde la raíz del repositorio:
+Requiere JDK 25 y Docker. Primero configura PostgreSQL, Keycloak y las variables
+locales siguiendo la [guía de ejecución](docs/run-company-service.md).
 
 ```bash
 cd services/company-service
@@ -18,11 +20,12 @@ cd services/company-service
 ./mvnw spring-boot:run
 ```
 
-Salud: http://localhost:8081/actuator/health.
-En Windows usar `mvnw.cmd`.
+En Windows usar `mvnw.cmd`. Las pruebas necesitan Docker (Testcontainers).
 
 ## Documentación
 
+- [Ejecutar el flujo implementado](docs/run-company-service.md)
+- [Decisiones de implementación](docs/adr/0003-implementacion-empresas.md)
 - [Guía de la fase 1](docs/phase-1.md)
 - [Diseño y contratos de la fase 2](docs/phase-2.md)
 - [Decisión arquitectónica](docs/adr/0001-base-arquitectonica.md)
