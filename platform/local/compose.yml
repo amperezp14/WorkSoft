@@ -23,7 +23,7 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     volumes:
-      - ./worksoft-realm.json:/opt/keycloak/data/import/worksoft-realm.json:ro
+      - ./worksoft-realm.json:/opt/keycloak/data/import/worksoft-local-realm.json:ro
       - identity-data:/opt/keycloak/data
 volumes:
   company-data:
