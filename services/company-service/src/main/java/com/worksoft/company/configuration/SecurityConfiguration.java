@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.jwt.*;
 
 @Configuration
+@Profile("!local")
 public class SecurityConfiguration {
     @Bean SecurityFilterChain security(HttpSecurity http) throws Exception {
         var converter=new JwtAuthenticationConverter();

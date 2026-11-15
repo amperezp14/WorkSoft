@@ -1,5 +1,7 @@
 # ADR 0003 — Implementación inicial de empresas
 
+Nota: el arranque actual se simplificó mediante [ADR 0005](0005-modo-local.md). Las decisiones de identidad anteriores no son un requisito del modo local.
+
 Estado: implementado como primer incremento funcional.
 
 ## Decisiones concretas

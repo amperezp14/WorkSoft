@@ -21,10 +21,10 @@ public class CompanyConfiguration {
         });
     }
     @Bean Clock clock() { return Clock.systemUTC(); }
-    @Bean CompanyStore companyStore(JdbcTemplate jdbc, PlatformTransactionManager manager, Clock clock) {
+    @Bean @Profile("!local") CompanyStore companyStore(JdbcTemplate jdbc, PlatformTransactionManager manager, Clock clock) {
         return new PostgresCompanyStore(jdbc,new TransactionTemplate(manager),clock);
     }
-    @Bean CursorCodec cursorCodec(@Value("${worksoft.cursor-secret}") String secret,Clock clock) {
+    @Bean @Profile("!local") CursorCodec cursorCodec(@Value("${worksoft.cursor-secret}") String secret,Clock clock) {
         return new SignedCursorCodec(secret,clock);
     }
     @Bean CompanyService companyService(CompanyStore store,CursorCodec cursors,Clock clock) {

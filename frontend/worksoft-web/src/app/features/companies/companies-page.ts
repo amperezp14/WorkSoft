@@ -2,7 +2,7 @@ import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
-import { AuthService } from '../../core/auth.service';
+import { WorkspaceService } from '../../core/workspace.service';
 import { apiErrorMessage } from '../../core/api-error';
 import { Icon } from '../../shared/icon';
 import { CompaniesApi, Company } from './companies.api';
@@ -15,7 +15,7 @@ import { CompaniesApi, Company } from './companies.api';
         <h1>Mis empresas</h1>
         <p>Todo empieza con una buena organización.</p>
       </div>
-      @if (auth.canProvision()) {
+      @if (workspace.canProvision()) {
         <a class="button primary" routerLink="/empresas/nueva"
           ><app-icon name="plus" /> Registrar empresa</a
         >
@@ -31,9 +31,9 @@ import { CompaniesApi, Company } from './companies.api';
       <section class="summary-card">
         <span class="summary-icon mint"><app-icon name="lock" /></span>
         <div>
-          <span>Tu acceso</span
+          <span>Entorno de trabajo</span
           ><strong class="text-value">{{
-            auth.canProvision() ? 'Operador de plataforma' : 'Miembro de empresa'
+            workspace.browserMemory ? 'Memoria del navegador' : 'API local'
           }}</strong>
         </div>
       </section>
@@ -49,7 +49,7 @@ import { CompaniesApi, Company } from './companies.api';
       <div class="panel-toolbar">
         <div>
           <h2 id="companies-title">Tus organizaciones</h2>
-          <p>Solo verás empresas a las que tienes acceso.</p>
+          <p>Empresas creadas en este espacio de trabajo.</p>
         </div>
         <label class="search"
           ><app-icon name="search" /><span class="sr-only">Buscar en empresas cargadas</span
@@ -78,12 +78,12 @@ import { CompaniesApi, Company } from './companies.api';
           <h3>Tu próxima etapa empieza aquí</h3>
           <p>
             {{
-              auth.canProvision()
+              workspace.canProvision()
                 ? 'Registra tu primera empresa para comenzar a organizar su información.'
                 : 'Aún no tienes empresas asignadas. Solicita acceso al administrador de tu organización.'
             }}
           </p>
-          @if (auth.canProvision()) {
+          @if (workspace.canProvision()) {
             <a class="button secondary" routerLink="/empresas/nueva"
               ><app-icon name="plus" /> Registrar mi primera empresa</a
             >
@@ -150,15 +150,15 @@ import { CompaniesApi, Company } from './companies.api';
     </section>
     <div class="workspace-note">
       <app-icon name="lock" /><span
-        >La información de cada empresa se mantiene separada. Tus permisos determinan a qué puedes
-        acceder.</span
+        >Los datos de este espacio local son temporales. Puedes crear y consultar empresas sin
+        iniciar sesión.</span
       ><button class="text-button" (click)="load(true)" [disabled]="loading()">
         Actualizar listado
       </button>
     </div>`,
 })
 export class CompaniesPage {
-  readonly auth = inject(AuthService);
+  readonly workspace = inject(WorkspaceService);
   private readonly api = inject(CompaniesApi);
   private readonly destroy = inject(DestroyRef);
   readonly companies = signal<Company[]>([]);

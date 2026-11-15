@@ -1,36 +1,25 @@
-# Límites iniciales de servicios
+# Arquitectura actual y evolución
 
-| Servicio | Datos propios | Responsabilidades y exclusiones |
-| --- | --- | --- |
-| Proveedor OIDC | Identidades y credenciales | Emite tokens; no gestiona inventario ni membresías empresariales de WorkSoft. |
-| Empresas | Empresas, membresías, configuración | Aislamiento y permisos; no emite facturas fiscales. |
-| Catálogo | Productos, unidades y clasificación | Define referencias; no mantiene existencias. |
-| Inventario | Almacenes, reservas, movimientos | Mantiene existencias; referencias externas por ID. |
-| Ventas | Clientes comerciales, ofertas y pedidos | Coordina pedidos; no genera documentos DIAN. |
-| Facturación | Documentos fiscales y sus estados | Captura instantáneas necesarias y aplica reglas colombianas versionadas. |
-| Pagos | Cobros y conciliaciones | No infiere aprobación fiscal de una factura. |
-| Notificaciones | Entregas y preferencias aplicables | Consume eventos; minimiza información personal. |
-| Informes | Proyecciones de lectura | Sin consultas SQL directas a otras bases; reconoce retraso de actualización. |
+## Arranque actual
 
-Empresas implementa creación y consulta autorizadas. Los demás son límites propuestos; nómina,
-compras y contabilidad requieren análisis propio antes de crear servicios.
-El gateway enruta y puede validar tokens, pero los servicios verifican identidad
-y autorización. No se comparten esquemas JPA, tablas ni repositorios entre servicios.
+Angular → MemoryCompanies (memoria del navegador). Basta npm start.
+Opcionalmente Angular mode=api → company-service local → InMemoryCompanyStore.
+Este perfil de Java no utiliza base de datos ni proveedor de identidad.
 
-## Comunicación
+Los datos se pierden al recargar el navegador en demo o al reiniciar Java en api.
+La interfaz informa de ello. El contexto local único permite explorar las funciones;
+no representa autorización multiusuario ni aislamiento de producción.
 
-HTTP para respuestas inmediatas. Contratos bajo /api/v1; cambios incompatibles
-requieren nueva versión y plan de transición. Errores application/problem+json
-sin stacktrace, SQL, tokens ni información de otras empresas.
+## Próximas etapas
 
-Eventos para hechos ya confirmados: CompanyCreated v1 es el primero definido.
-Se escribe outbox en la misma transacción local que el negocio y se publica
-después de confirmar. Entrega al menos una vez: event id estable en reintentos,
-consumidores idempotentes, reintentos limitados y cola de errores cuando exista
-broker. No se promete exactamente una vez ni orden global. No hay broker en este incremento.
-Un cambio incompatible del payload crea otro tipo/versionado de evento.
+1. Persistencia de empresas mediante el puerto de salida y PostgreSQL.
+2. Acceso propio con usuarios almacenados en BD: hash seguro, sesiones,
+   recuperación y permisos por empresa. No se requiere un proveedor externo.
+3. Catálogo, inventario, ventas, facturación y pagos según procesos colombianos.
+4. Comunicación entre servicios, eventos, despliegue y observabilidad al necesitarlos.
 
-No se crea una transacción distribuida para coordinar inventario, ventas y
-facturación. Sus reservas, compensaciones y requisitos de consistencia se diseñan
-con los flujos funcionales de esas fases, sin asumir que un evento basta para
-resolver requisitos fiscales o financieros.
+Cada servicio futuro será propietario de sus datos; se conservarán los límites
+hexagonales y el contexto colombiano. La implementación PostgreSQL anterior y su
+seguridad OIDC permanecen aisladas bajo connected como referencia histórica,
+sin participar del arranque actual. Ver ADR 0005 para la decisión que sustituye
+el requisito previo de Keycloak.

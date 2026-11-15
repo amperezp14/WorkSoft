@@ -6,7 +6,6 @@ import java.util.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -25,24 +24,26 @@ public class CompanyController {
             @NotNull @Pattern(regexp="[0-9]{1,15}") String nit,
             @NotNull @Pattern(regexp="[0-9]") String verificationDigit) { }
     public record PageResponse(List<CompanyResponse> items, String nextCursor) { }
-    private Actor actor(Jwt jwt, Authentication auth) {
+    private Actor actor(Authentication auth) {
+        if (auth.getPrincipal() instanceof Actor local) return local;
+        Jwt jwt = (Jwt) auth.getPrincipal();
         boolean provision = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("company:provision"));
         return new Actor(jwt.getIssuer().toString(), jwt.getSubject(), provision);
     }
     @PostMapping
-    public ResponseEntity<CompanyResponse> create(@AuthenticationPrincipal Jwt jwt, Authentication auth,
+    public ResponseEntity<CompanyResponse> create(Authentication auth,
             @RequestHeader("Idempotency-Key") String key, @Valid @RequestBody CreateRequest request) {
-        var company=create.create(actor(jwt,auth),new CreateCompanyCommand(request.legalName(),request.nit(),request.verificationDigit(),key));
+        var company=create.create(actor(auth),new CreateCompanyCommand(request.legalName(),request.nit(),request.verificationDigit(),key));
         return ResponseEntity.created(URI.create("/api/v1/companies/"+company.id().value())).body(CompanyResponse.from(company));
     }
     @GetMapping("/{companyId}")
-    public CompanyResponse get(@AuthenticationPrincipal Jwt jwt, Authentication auth, @PathVariable UUID companyId) {
-        return CompanyResponse.from(queries.get(actor(jwt,auth),new CompanyId(companyId)));
+    public CompanyResponse get(Authentication auth, @PathVariable UUID companyId) {
+        return CompanyResponse.from(queries.get(actor(auth),new CompanyId(companyId)));
     }
     @GetMapping
-    public PageResponse list(@AuthenticationPrincipal Jwt jwt, Authentication auth,
+    public PageResponse list(Authentication auth,
             @RequestParam(defaultValue="20") int limit, @RequestParam(required=false) String cursor) {
-        var page=queries.list(actor(jwt,auth),limit,cursor);
+        var page=queries.list(actor(auth),limit,cursor);
         return new PageResponse(page.items().stream().map(CompanyResponse::from).toList(),page.nextCursor());
     }
 }

@@ -1,5 +1,7 @@
 # ADR 0002 — Empresas, identidad y autorización
 
+Nota: el arranque actual se simplificó mediante [ADR 0005](0005-modo-local.md). Las decisiones de identidad anteriores no son un requisito del modo local.
+
 Estado: decisión inicial de diseño, revisable antes de implementar fase 3.
 
 ## Decisión

@@ -67,8 +67,10 @@ import { Icon } from '../../shared/icon';
         </section>
         <aside class="context-panel">
           <app-icon name="lock" />
-          <h2>Un espacio independiente</h2>
-          <p>Los datos de esta empresa están separados de los de tus otras organizaciones.</p>
+          <h2>Datos temporales</h2>
+          <p>
+            Este registro pertenece al espacio local. Los datos en memoria se pierden al reiniciar.
+          </p>
           <p class="muted">
             “Activa” describe su estado dentro de WorkSoft y no acredita su situación jurídica o
             tributaria ante la DIAN.

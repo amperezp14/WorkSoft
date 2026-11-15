@@ -1,6 +1,12 @@
 # Frontend WorkSoft
 
-La aplicación Angular está en [worksoft-web](worksoft-web). Incluye acceso con
-Keycloak, listado, registro y detalle de empresas contra la API existente.
+Aplicación en worksoft-web. Para verla, con Node.js 24 LTS y npm 11:
 
-Seguir la [guía de ejecución](../docs/run-frontend.md).
+```bash
+cd worksoft-web
+npm ci
+npm start
+```
+
+Acceso directo en http://localhost:4200. No necesita backend, BD ni autenticación.
+Datos en memoria, borrados al recargar. Ver docs/run-frontend.md desde la raíz.

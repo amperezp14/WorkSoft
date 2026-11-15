@@ -11,7 +11,10 @@ describe('CompaniesApi', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: RuntimeConfigService, useValue: { config: { apiBaseUrl: '/api/v1' } } },
+        {
+          provide: RuntimeConfigService,
+          useValue: { config: { mode: 'api', apiBaseUrl: '/api/v1' } },
+        },
       ],
     });
     http = TestBed.inject(HttpTestingController);

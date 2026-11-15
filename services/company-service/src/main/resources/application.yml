@@ -1,10 +1,12 @@
 spring:
+  profiles:
+    default: local
   application:
     name: company-service
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/worksoft}
     username: ${DB_USERNAME:worksoft}
-    password: ${DB_PASSWORD}
+    password: ${DB_PASSWORD:}
   jackson:
     deserialization:
       fail-on-unknown-properties: true
@@ -13,7 +15,7 @@ spring:
 server:
   port: ${SERVER_PORT:8081}
 worksoft:
-  cursor-secret: ${CURSOR_SECRET}
+  cursor-secret: ${CURSOR_SECRET:}
   security:
     issuer: ${OIDC_ISSUER:http://localhost:8080/realms/worksoft-local}
     jwk-set-uri: ${OIDC_JWKS:http://localhost:8080/realms/worksoft-local/protocol/openid-connect/certs}

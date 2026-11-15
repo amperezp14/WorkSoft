@@ -118,8 +118,8 @@ import { CompaniesApi, IdempotencyKeys, normalizeCompany } from './companies.api
           </div>
         </dl>
         <hr />
-        <h3>Tu acceso inicial</h3>
-        <p>Al registrar la empresa, recibirás acceso de administrador dentro de ella.</p>
+        <h3>Espacio de prueba</h3>
+        <p>Puedes crear y consultar empresas en este espacio local sin iniciar sesión.</p>
         <p class="muted">
           El registro en WorkSoft no inscribe ni habilita a la empresa ante la DIAN. Verifica los
           datos con su documentación tributaria.

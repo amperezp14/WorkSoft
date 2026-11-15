@@ -6,19 +6,18 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localeCo from '@angular/common/locales/es-CO';
 import { routes } from './app.routes';
-import { authInterceptor } from './core/auth.interceptor';
-import { AuthService } from './core/auth.service';
+import { WorkspaceService } from './core/workspace.service';
 registerLocaleData(localeCo);
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(),
     { provide: LOCALE_ID, useValue: 'es-CO' },
-    provideAppInitializer(() => inject(AuthService).initialize()),
+    provideAppInitializer(() => inject(WorkspaceService).initialize()),
   ],
 };

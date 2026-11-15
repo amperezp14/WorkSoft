@@ -1,4 +1,4 @@
-@if (auth.authenticated()) {
+@if (workspace.ready()) {
   <a class="skip-link" href="#main-content">Saltar al contenido</a>
   <div class="workspace">
     <aside class="sidebar">
@@ -29,14 +29,19 @@
       <header class="topbar">
         <span class="breadcrumb">Mi espacio <span>/</span> <strong>Empresas</strong></span>
         <div class="user-actions">
-          <span class="user-avatar">{{ auth.initials() }}</span
-          ><span class="user-name">{{ auth.username() }}</span
-          ><button class="icon-button" aria-label="Cerrar sesión" (click)="auth.logout()">
-            <app-icon name="logout" />
-          </button>
+          <span class="user-avatar">{{ workspace.initials() }}</span
+          ><span class="user-name">{{ workspace.username() }}</span>
         </div>
       </header>
       <main id="main-content" class="page-content">
+        <div class="alert success" role="note">
+          <strong>Modo local</strong> ·
+          {{
+            workspace.browserMemory
+              ? 'Datos en memoria. Se borran al recargar la página.'
+              : 'API en memoria. Los datos se borran al reiniciar el servidor.'
+          }}
+        </div>
         @if (notices.message()) {
           <div class="alert success" role="status">
             <app-icon name="check" />{{ notices.message()
@@ -49,8 +54,8 @@
             </button>
           </div>
         }
-        @if (auth.error()) {
-          <div class="alert error" role="alert">{{ auth.error() }}</div>
+        @if (workspace.error()) {
+          <div class="alert error" role="alert">{{ workspace.error() }}</div>
         }
         <router-outlet />
       </main>
@@ -61,5 +66,9 @@
     </div>
   </div>
 } @else {
-  <app-welcome />
+  <main class="empty-state">
+    <h1>WorkSoft</h1>
+    <p role="alert">{{ workspace.error() }}</p>
+    <button class="button primary" (click)="workspace.reload()">Volver a cargar</button>
+  </main>
 }

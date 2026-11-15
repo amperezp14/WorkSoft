@@ -1,40 +1,45 @@
 # WorkSoft
 
-WorkSoft es una aplicación completa de gestión empresarial en construcción,
-diseñada para el entorno empresarial y la normativa colombiana.
+ERP en construcción para empresas colombianas. El modo actual permite explorar
+la aplicación, registrar empresas y consultar sus datos sin configurar servicios.
 
-## Estado
+## Ver la aplicación
 
-Primer flujo implementado: crear, listar y consultar empresas con arquitectura
-hexagonal, PostgreSQL, Flyway y autorización JWT/OIDC. Incluye aislamiento por
-membresía, idempotencia, auditoría y outbox transaccional.
+Requiere Node.js 24 LTS y npm 11. Desde la raíz del repositorio:
 
-## Frontend Angular
+```bash
+cd frontend/worksoft-web
+npm ci
+npm start
+```
 
-Aplicación de acceso y gestión de empresas disponible en `frontend/worksoft-web`.
-Seguir la [guía del frontend](docs/run-frontend.md) para conectar Keycloak y la API.
+Abrir http://localhost:4200. Acceso directo, sin login, Docker, PostgreSQL,
+Keycloak ni backend. Los datos viven en memoria del navegador y se borran al
+recargar la página. La interfaz muestra esta condición como Modo local.
 
-## Inicio rápido
+## Backend opcional
 
-Requiere JDK 25 y Docker. Primero configura PostgreSQL, Keycloak y las variables
-locales siguiendo la [guía de ejecución](docs/run-company-service.md).
+Con JDK 25:
 
 ```bash
 cd services/company-service
-./mvnw verify
 ./mvnw spring-boot:run
 ```
 
-En Windows usar `mvnw.cmd`. Las pruebas necesitan Docker (Testcontainers).
+En Windows usar .\mvnw.cmd. El perfil predeterminado local usa memoria, sin
+credenciales ni servicios externos, y escucha en 127.0.0.1:8081.
 
-## Documentación
+Para conectar Angular con ese backend, cambiar mode a api en
+frontend/worksoft-web/public/config.json y mantener npm start ejecutándose.
+En ese caso los datos se borran al reiniciar Java, no al recargar Angular.
 
-- [Ejecutar el flujo implementado](docs/run-company-service.md)
-- [Decisiones de implementación](docs/adr/0003-implementacion-empresas.md)
-- [Guía de la fase 1](docs/phase-1.md)
-- [Diseño y contratos de la fase 2](docs/phase-2.md)
-- [Decisión arquitectónica](docs/adr/0001-base-arquitectonica.md)
+## Siguientes decisiones
+
+La persistencia y los usuarios con autenticación propia en base de datos se
+implementarán después. Este modo local no representa un sistema autenticado ni
+un despliegue de producción. No se implementa validación DIAN en este incremento.
+
+- [Frontend](docs/run-frontend.md)
+- [Backend local](docs/run-company-service.md)
+- [Decisión de simplificación](docs/adr/0005-modo-local.md)
 - [Contexto colombiano](docs/architecture/colombia.md)
-
-El desarrollo se realiza en `develop`. Los módulos posteriores incluirán empresas,
-catálogos, inventario, ventas, facturación y pagos, según el roadmap acordado.

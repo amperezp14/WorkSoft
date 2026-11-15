@@ -3,7 +3,7 @@
   "info": {
     "title": "WorkSoft — Empresas",
     "version": "1.0.0",
-    "description": "Contrato del primer flujo implementado. Colombia, personas jurídicas. Validación estructural de NIT/DV; sin validación DIAN."
+    "description": "API del perfil local, sin autenticación y con datos volátiles. NIT y DV tienen validación estructural; no validación DIAN."
   },
   "servers": [
     {
@@ -11,17 +11,13 @@
       "description": "Desarrollo local; usar HTTPS fuera del entorno local."
     }
   ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
+  "security": [],
   "paths": {
     "/api/v1/companies": {
       "post": {
         "operationId": "createCompany",
         "summary": "Registrar empresa y membresía inicial",
-        "description": "Requiere company:provision. Empresa, membresía, idempotencia, auditoría y outbox se guardan atómicamente. Una repetición autorizada idéntica devuelve el mismo 201 y Location durante al menos 24 horas. Consultar docs/phase-2.md.",
+        "description": "Crea una empresa en memoria del servidor. Un reintento con la misma clave y datos reproduce el resultado durante 24 horas dentro de la vida del proceso. Sin persistencia durable ni proveedor de identidad.",
         "parameters": [
           {
             "in": "header",
@@ -75,33 +71,6 @@
               }
             }
           },
-          "401": {
-            "description": "Access token ausente o inválido.",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "headers": {
-              "WWW-Authenticate": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Falta permiso de aprovisionamiento.",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
           "409": {
             "description": "Conflicto de NIT o idempotencia; sin información de otra empresa.",
             "content": {
@@ -136,7 +105,7 @@
       "get": {
         "operationId": "listMyCompanies",
         "summary": "Listar empresas con membresía activa del actor",
-        "description": "Orden ascendente por createdAt e id. El cursor se liga al issuer, subject y limit, expira a los 15 minutos y se revalida la membresía en cada página. No es una instantánea transaccional entre páginas.",
+        "description": "Lista las empresas del contexto local de trabajo con paginación. El cursor vence a los 15 minutos.",
         "parameters": [
           {
             "in": "query",
@@ -179,23 +148,6 @@
               }
             }
           },
-          "401": {
-            "description": "Access token ausente o inválido.",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "headers": {
-              "WWW-Authenticate": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
           "503": {
             "description": "Operación temporalmente no disponible; reintentar con la misma clave.",
             "content": {
@@ -222,7 +174,7 @@
       "get": {
         "operationId": "getCompany",
         "summary": "Consultar empresa autorizada",
-        "description": "Requiere membresía activa ADMIN o READER. La ausencia de membresía y una empresa inexistente producen el mismo 404.",
+        "description": "Consulta una empresa del contexto local o devuelve 404.",
         "parameters": [
           {
             "in": "path",
@@ -251,23 +203,6 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Access token ausente o inválido.",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "headers": {
-              "WWW-Authenticate": {
-                "schema": {
-                  "type": "string"
                 }
               }
             }
@@ -306,14 +241,6 @@
     }
   },
   "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Access token OIDC con issuer y audience configurados. Identidad por issuer + subject. Roles empresariales se comprueban en membresías."
-      }
-    },
     "schemas": {
       "CreateCompanyRequest": {
         "type": "object",

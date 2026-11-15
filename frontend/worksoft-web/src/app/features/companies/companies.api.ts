@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, defer, of } from 'rxjs';
+import { MemoryCompanies } from './memory-companies';
 import { RuntimeConfigService } from '../../core/runtime-config';
 export interface Company {
   id: string;
@@ -25,19 +26,23 @@ export interface CompanyPage {
 @Injectable({ providedIn: 'root' })
 export class CompaniesApi {
   private readonly http = inject(HttpClient);
+  private readonly memory = inject(MemoryCompanies);
   private readonly config = inject(RuntimeConfigService);
   private get base(): string {
     return this.config.config.apiBaseUrl + '/companies';
   }
   list(cursor: string | null = null): Observable<CompanyPage> {
+    if (this.config.config.mode === 'demo') return defer(() => of(this.memory.list(cursor)));
     let params = new HttpParams().set('limit', 20);
     if (cursor) params = params.set('cursor', cursor);
     return this.http.get<CompanyPage>(this.base, { params });
   }
   get(id: string): Observable<Company> {
+    if (this.config.config.mode === 'demo') return defer(() => of(this.memory.get(id)));
     return this.http.get<Company>(this.base + '/' + encodeURIComponent(id));
   }
   create(body: CreateCompanyRequest, key: string): Observable<Company> {
+    if (this.config.config.mode === 'demo') return defer(() => of(this.memory.create(body, key)));
     return this.http.post<Company>(this.base, body, { headers: { 'Idempotency-Key': key } });
   }
 }
