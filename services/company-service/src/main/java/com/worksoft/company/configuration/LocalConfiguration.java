@@ -19,10 +19,10 @@ import com.worksoft.company.adapter.out.cursor.SignedCursorCodec;
 import com.worksoft.company.application.port.in.Actor;
 import com.worksoft.company.application.port.out.*;
 @Configuration
-@Profile("local")
+@Profile({"local", "postgres"})
 public class LocalConfiguration {
-    @Bean CompanyStore memoryStore(Clock clock) { return new InMemoryCompanyStore(clock); }
-    @Bean CursorCodec localCursors(Clock clock) { return new SignedCursorCodec(UUID.randomUUID().toString(), clock); }
+    @Bean @Profile("local") CompanyStore memoryStore(Clock clock) { return new InMemoryCompanyStore(clock); }
+    @Bean @Profile("local") CursorCodec localCursors(Clock clock) { return new SignedCursorCodec(UUID.randomUUID().toString(), clock); }
     @Bean SecurityFilterChain localSecurity(HttpSecurity http) throws Exception {
         return http.csrf(c -> c.disable()).sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(a -> a.requestMatchers("/api/v1/companies", "/api/v1/companies/**", "/actuator/health", "/actuator/health/**").permitAll().anyRequest().denyAll())

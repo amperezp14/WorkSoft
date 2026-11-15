@@ -26,6 +26,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/companies/company-detail-page').then((m) => m.CompanyDetailPage),
       },
+      {
+        path: 'contabilidad/plan-de-cuentas',
+        loadComponent: () =>
+          import('./features/accounting/accounts-page').then((m) => m.AccountsPage),
+      },
       { path: 'contabilidad', loadComponent: modulePage, data: { module: 'contabilidad' } },
       {
         path: 'contabilidad/:section',

@@ -15,7 +15,9 @@ import { Icon } from '../../shared/icon';
         <h2>{{ module.title }}</h2>
         <p>{{ module.description }}</p>
       </div>
-      <span class="module-stage">En preparación</span>
+      <span class="module-stage">{{
+        module.path === 'contabilidad' ? 'Plan de cuentas disponible' : 'En preparación'
+      }}</span>
     </div>
     <div class="module-layout">
       <nav

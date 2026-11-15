@@ -1,53 +1,23 @@
-# Backend local en memoria
+# Backend PostgreSQL
 
-Requiere JDK 25. No requiere PostgreSQL, Docker, Keycloak, .env ni contraseñas.
-Desde la raíz de WorkSoft:
+El perfil predeterminado es postgres: requiere PostgreSQL y no requiere Keycloak.
+Ver [configuración, comandos y formulario](run-postgres-accounting.md).
 
 ```bash
 cd services/company-service
 ./mvnw spring-boot:run
 ```
 
-En PowerShell usar .\mvnw.cmd spring-boot:run. En IntelliJ ejecutar
-CompanyServiceApplication, sin perfiles activos. Si tenías un perfil explícito,
-seleccionar local. El perfil predeterminado ahora es local.
+PowerShell: .\mvnw.cmd spring-boot:run. JDK 25. En IntelliJ quitar el perfil local
+y usar postgres. El backend carga opcionalmente platform/local/.env desde la raíz
+o desde el servicio. DB_PASSWORD debe coincidir con la contraseña real de la BD.
 
-Salud: http://localhost:8081/actuator/health.
-API: http://localhost:8081/api/v1/companies.
+Las migraciones V1–V3 crean empresas, catálogo de referencia y cuentas por empresa.
+Flyway se ejecuta al iniciar; no se recrea el volumen para aplicar este incremento.
+El perfil postgres no crea JwtDecoder y usa el contexto local de trabajo existente.
+Las tablas de negocio se guardan en PostgreSQL; los usuarios/login propios siguen pendientes.
 
-En local se excluyen DataSource y Flyway. El adaptador InMemoryCompanyStore
-implementa el puerto del dominio; no conecta a ninguna BD. Cada petición usa un
-único contexto local de trabajo sin exigir tokens. El servidor escucha solo en
-127.0.0.1 y los registros se pierden al reiniciar el proceso.
-
-La creación conserva idempotencia, validación y unicidad de NIT en memoria.
-No hay auditoría durable ni entrega de eventos en este perfil. No es un mecanismo
-de autenticación ni un despliegue de producción.
-
-## Angular
-
-Para solo ver la interfaz basta npm start con el modo demo predeterminado.
-Para probar la API Java desde la interfaz, configurar mode=api en
-frontend/worksoft-web/public/config.json. No se envían cabeceras de autenticación.
-
-## Pruebas
-
-```bash
-./mvnw verify
-```
-
-La suite completa incluye las pruebas históricas PostgreSQL/seguridad, activadas
-explícitamente bajo connected, que sí usan Docker. Para probar solo el arranque
-local y núcleo sin Docker:
-
-```bash
-./mvnw "-Dtest=LocalApplicationTests,DomainTests,CursorTests,ArchitectureTests" verify
-```
-
-El perfil connected y el adaptador PostgreSQL se conservan como implementación
-anterior aislada. Su autenticación OIDC no forma parte del nuevo arranque ni de la
-solución de usuarios en BD prevista. No activar ese perfil para ver la app local.
-
-La gestión propia de usuarios, hash de contraseñas, login y persistencia se diseñará
-en la siguiente etapa; no se almacenan contraseñas en texto plano ni se simula
-que el contexto local represente un usuario autenticado.
+Los perfiles local (pruebas históricas en memoria) y connected (pruebas OIDC
+históricas) son explícitos y no constituyen alternativas automáticas al fallar la BD.
+El frontend ya no ofrece modo demo. ./mvnw verify ejecuta la suite completa y
+necesita Docker para los contenedores PostgreSQL de prueba.

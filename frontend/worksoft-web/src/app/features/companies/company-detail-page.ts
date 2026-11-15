@@ -52,9 +52,9 @@ import { Icon } from '../../shared/icon';
       </section>
       <aside class="context-panel">
         <app-icon name="lock" />
-        <h2>Datos temporales</h2>
+        <h2>Datos guardados</h2>
         <p>
-          Este registro pertenece al espacio local. Los datos en memoria se pierden al reiniciar.
+          Los datos de esta empresa se guardan en PostgreSQL y permanecen al cerrar la aplicación.
         </p>
         <p class="muted">
           “Activa” describe su estado dentro de WorkSoft y no acredita su situación jurídica o

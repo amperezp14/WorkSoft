@@ -22,12 +22,13 @@ public final class PostgresCompanyStore implements CompanyStore {
     private final JdbcTemplate jdbc;
     private final TransactionTemplate transactions;
     private final Clock clock;
+    private final boolean singleWorkspace;
     private static final String ACCESSIBLE = """
         SELECT c.* FROM companies c JOIN memberships m ON m.company_id=c.id
         WHERE m.issuer=? AND m.subject=? AND m.active=true AND m.role IN ('ADMIN','READER')
         """;
-    public PostgresCompanyStore(JdbcTemplate jdbc, TransactionTemplate transactions, Clock clock) {
-        this.jdbc = jdbc; this.transactions = transactions; this.clock = clock;
+    public PostgresCompanyStore(JdbcTemplate jdbc, TransactionTemplate transactions, Clock clock, boolean singleWorkspace) {
+        this.jdbc = jdbc; this.transactions = transactions; this.clock = clock; this.singleWorkspace=singleWorkspace;
     }
     private Company map(ResultSet rs, int row) throws SQLException {
         return new Company(new CompanyId(rs.getObject("id", UUID.class)), rs.getString("legal_name"),
@@ -35,9 +36,14 @@ public final class PostgresCompanyStore implements CompanyStore {
                 rs.getTimestamp("created_at").toInstant());
     }
     @Override public Optional<Company> findAccessible(Actor actor, CompanyId id) {
+        if(singleWorkspace) return jdbc.query("SELECT * FROM companies WHERE id=?",this::map,id.value()).stream().findFirst();
         return jdbc.query(ACCESSIBLE + " AND c.id=?", this::map, actor.issuer(), actor.subject(), id.value()).stream().findFirst();
     }
     @Override public List<Company> listAccessible(Actor actor, PagePosition after, int limit) {
+        if(singleWorkspace) {
+            if(after==null) return jdbc.query("SELECT * FROM companies ORDER BY created_at,id LIMIT ?",this::map,limit);
+            return jdbc.query("SELECT * FROM companies WHERE (created_at,id)>(?,?) ORDER BY created_at,id LIMIT ?",this::map,Timestamp.from(after.createdAt()),after.id(),limit);
+        }
         if (after == null) return jdbc.query(ACCESSIBLE + " ORDER BY c.created_at,c.id LIMIT ?", this::map,
                 actor.issuer(), actor.subject(), limit);
         return jdbc.query(ACCESSIBLE + " AND (c.created_at,c.id)>(?,?) ORDER BY c.created_at,c.id LIMIT ?", this::map,
@@ -71,6 +77,10 @@ public final class PostgresCompanyStore implements CompanyStore {
                 actor.issuer(), actor.subject(), key);
         jdbc.update("INSERT INTO companies(id,legal_name,nit,verification_digit,created_at) VALUES (?,?,?,?,?)",
                 c.id().value(), c.legalName(), c.taxIdentification().nit(), c.taxIdentification().verificationDigit(), Timestamp.from(c.createdAt()));
+        jdbc.update("""
+            INSERT INTO chart_accounts(company_id,code,name,parent_code,nature,reference_code)
+            SELECT ?,code,name,parent_code,nature,code FROM puc_reference_accounts
+            """, c.id().value());
         jdbc.update("INSERT INTO memberships(company_id,issuer,subject,role,active) VALUES (?,?,?,'ADMIN',true)",
                 c.id().value(), actor.issuer(), actor.subject());
         jdbc.update("""

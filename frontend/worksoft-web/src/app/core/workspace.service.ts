@@ -9,9 +9,6 @@ export class WorkspaceService {
   readonly username = signal('Espacio local');
   readonly initials = signal('WS');
   readonly canProvision = signal(true);
-  get browserMemory(): boolean {
-    return this.config.config.mode === 'demo';
-  }
   async initialize(): Promise<void> {
     try {
       await this.config.load();

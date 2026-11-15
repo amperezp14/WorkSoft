@@ -1,11 +1,30 @@
 # WorkSoft
 
-ERP en construcción para empresas colombianas. El modo actual permite explorar
-la aplicación, registrar empresas y consultar sus datos sin configurar servicios.
+ERP en construcción para empresas colombianas. La aplicación guarda empresas y
+su plan de cuentas en PostgreSQL, sin Keycloak ni autenticación externa.
 
-## Ver la aplicación
+## Arranque
 
-Requiere Node.js 24 LTS y npm 11. Desde la raíz del repositorio:
+Requiere JDK 25, Node.js 24 LTS/npm 11 y PostgreSQL. Si utilizas Docker:
+
+```bash
+docker compose --env-file platform/local/.env -f platform/local/compose.yml up -d postgres
+```
+
+Configura DB_PASSWORD en platform/local/.env con la contraseña real de la base.
+El backend carga ese archivo desde la raíz o desde services/company-service.
+
+En otra terminal:
+
+```bash
+cd services/company-service
+./mvnw spring-boot:run
+```
+
+En PowerShell usar .\mvnw.cmd spring-boot:run. En IntelliJ seleccionar el perfil
+postgres o dejar los perfiles vacíos; retirar local si estaba configurado.
+
+Para Angular:
 
 ```bash
 cd frontend/worksoft-web
@@ -13,36 +32,19 @@ npm ci
 npm start
 ```
 
-Abrir http://localhost:4200. Acceso directo, sin login, Docker, PostgreSQL,
-Keycloak ni backend. Los datos viven en memoria del navegador y se borran al
-recargar la página. La interfaz muestra esta condición como Modo local.
+Abrir http://localhost:4200. Crear o seleccionar una empresa, entrar a Contabilidad
+→ Plan de cuentas. Cada empresa recibe 108 cuentas iniciales de referencia y
+permite crear auxiliares y editar cuentas. Los cambios permanecen al recargar y
+reiniciar la aplicación. No hay respaldo automático en memoria si la BD falla.
 
-Al abrir una empresa puedes seleccionar Contabilidad o Facturación y recorrer
-sus menús. Las operaciones contables y de facturación están en preparación.
+La referencia es parcial, basada en el PUC para comerciantes del Decreto 2650 de
+1993 y revisada para este desarrollo en 2026; no representa un PUC oficial nuevo
+ni sustituye la definición del catálogo propio según el marco contable aplicable.
 
-## Backend opcional
-
-Con JDK 25:
-
-```bash
-cd services/company-service
-./mvnw spring-boot:run
-```
-
-En Windows usar .\mvnw.cmd. El perfil predeterminado local usa memoria, sin
-credenciales ni servicios externos, y escucha en 127.0.0.1:8081.
-
-Para conectar Angular con ese backend, cambiar mode a api en
-frontend/worksoft-web/public/config.json y mantener npm start ejecutándose.
-En ese caso los datos se borran al reiniciar Java, no al recargar Angular.
-
-## Siguientes decisiones
-
-La persistencia y los usuarios con autenticación propia en base de datos se
-implementarán después. Este modo local no representa un sistema autenticado ni
-un despliegue de producción. No se implementa validación DIAN en este incremento.
-
+- [Conexión y uso del plan de cuentas](docs/run-postgres-accounting.md)
+- [Fuentes y alcance de la referencia](docs/accounting/puc-reference.md)
 - [Frontend](docs/run-frontend.md)
-- [Backend local](docs/run-company-service.md)
-- [Decisión de simplificación](docs/adr/0005-modo-local.md)
 - [Contexto colombiano](docs/architecture/colombia.md)
+
+La aplicación sigue siendo un espacio local sin login; la autenticación propia
+contra BD y la emisión fiscal se implementarán en etapas posteriores.

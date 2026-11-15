@@ -1,6 +1,9 @@
-# Frontend local sin servicios externos
+# Frontend con PostgreSQL
 
-Requiere Node.js 24 LTS y npm 11. Desde la raíz:
+La aplicación ahora consulta exclusivamente la API; se retiró el almacén demo.
+Para iniciar y configurar la BD y Java seguir [la guía de PostgreSQL](run-postgres-accounting.md).
+
+Con el backend disponible en localhost:8081:
 
 ```bash
 cd frontend/worksoft-web
@@ -8,74 +11,18 @@ npm ci
 npm start
 ```
 
-Abrir http://localhost:4200. No necesitas Java, Docker, PostgreSQL, Keycloak,
-variables .env, usuarios ni contraseñas. El registro y consulta de empresas se
-resuelven en memoria del navegador, sin peticiones a la API.
+Node.js 24 LTS y npm 11. Abrir http://localhost:4200. No requiere Keycloak ni login.
+Seleccionar empresa → Contabilidad → Plan de cuentas abre la tabla y el formulario
+para crear y editar registros en PostgreSQL. Los datos persisten al recargar.
 
-## Configuración predeterminada
+public/config.json solo contiene apiBaseUrl. No contiene contraseñas; las credenciales
+de PostgreSQL pertenecen al backend. Si la API o la BD falla se muestra un error:
+no se utilizan datos locales como sustituto.
 
-public/config.json:
+Facturación y las otras opciones contables conservan su navegación inicial; la
+emisión DIAN y los comprobantes aún no están implementados.
 
-```json
-{ "mode": "demo", "apiBaseUrl": "/api/v1" }
-```
-
-El banner Modo local explica que los datos se pierden al recargar. No se guardan
-registros empresariales ni contraseñas en localStorage. NIT y DV siguen siendo
-texto; país CO, moneda COP y zona horaria America/Bogota.
-
-El formulario valida datos, conserva la clave de reintentos y rechaza NIT duplicado.
-También funcionan el listado, filtro, paginación y detalle. Las identificaciones
-solo tienen validación estructural: el registro no equivale a habilitación DIAN.
-
-## Conectar opcionalmente el backend local
-
-1. Arrancar Java siguiendo la guía del backend; no requiere base de datos.
-2. Cambiar mode a api en public/config.json.
-3. Mantener npm start y abrir nuevamente la app.
-
-El proxy /api conecta con http://localhost:8081. Para otro puerto definir
-API_PROXY_TARGET antes de iniciar Angular. En modo api, los registros viven en
-memoria del servidor y sobreviven a recargar el navegador, hasta reiniciar Java.
-Los modos demo y api tienen almacenes distintos; no sincronizan datos.
-
-## Verificar y compilar
-
-```bash
-npm test
-npm run build
-```
-
-Pruebas de navegador sin credenciales ni servicios externos:
-
-```bash
-npx playwright install chromium
-npm run e2e
-```
-
-La suite inicia Angular, registra y consulta empresas y verifica que no haya
-peticiones externas. PLAYWRIGHT_CHROMIUM_EXECUTABLE permite un Chromium ya
-instalado. E2E_BASE_URL permite probar contra un frontend ya arrancado.
-
-npm run build genera dist/worksoft-web/browser. No hace falta Node.js en el
-servidor que sirve esos archivos estáticos. Este modo local es temporal; la
-siguiente etapa de acceso utilizará usuarios propios almacenados en BD.
-
-## Espacio de trabajo por empresa
-
-En Mis empresas, pulsa el nombre o Abrir empresa. Se muestra la empresa elegida
-y un selector de módulos: Contabilidad y Facturación. Crear una empresa abre
-este mismo espacio automáticamente.
-
-Contabilidad incluye Plan de cuentas, Comprobantes contables, Terceros e Informes
-contables. Facturación incluye Facturas de venta, Clientes, Productos y servicios,
-y Notas crédito y débito. Cada opción tiene ruta y pantalla de preparación.
-
-Los menús mantienen el UUID de empresa en todas sus rutas. Cambiar empresa vuelve
-al listado y limpia el contexto anterior. Datos de la empresa conserva la consulta
-de información general. Si la empresa ya no existe en memoria, no se muestran
-módulos hasta seleccionar otra empresa.
-
-Este incremento implementa selección y navegación. Los formularios, movimientos,
-cálculos contables, documentos de venta y comunicación DIAN se desarrollarán
-después. El arranque sigue siendo npm start, sin BD ni autenticación externa.
+npm test ejecuta las pruebas unitarias; npm run build genera los archivos estáticos.
+Las pruebas de navegador necesitan la API y una BD de pruebas; no usan mocks de
+persistencia. Para desplegar el frontend compilado no hace falta Node.js en el
+servidor estático, y el acceso productivo requerirá la autenticación de una fase posterior.

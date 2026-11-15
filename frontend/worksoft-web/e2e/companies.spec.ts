@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test';
-test('abre directamente sin autenticación y registra una empresa sin peticiones externas', async ({
+test('abre directamente sin autenticación y registra una empresa contra PostgreSQL', async ({
   page,
 }) => {
   const external: string[] = [];
   page.on('request', (request) => {
-    if (!request.url().startsWith('http://localhost:4200')) external.push(request.url());
+    if (
+      new URL(request.url()).origin !==
+      new URL(process.env['E2E_BASE_URL'] || 'http://localhost:4200').origin
+    )
+      external.push(request.url());
   });
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Mis empresas', exact: true })).toBeVisible();
-  await expect(page.getByRole('note')).toContainText('Modo local');
+  await expect(page.getByRole('note')).toContainText('PostgreSQL');
   await expect(page.getByRole('button', { name: 'Iniciar sesión' })).toHaveCount(0);
   await page.getByRole('link', { name: 'Registrar empresa', exact: true }).click();
   await page.getByLabel('Razón social').fill('Ejemplo local S.A.S.');
@@ -23,7 +27,7 @@ test('abre directamente sin autenticación y registra una empresa sin peticiones
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.reload();
-  await expect(page.getByText('Tu próxima etapa empieza aquí')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ejemplo local S.A.S.', exact: true })).toBeVisible();
   expect(external).toEqual([]);
 });
 test('valida el formulario y evita NIT duplicado', async ({ page }) => {

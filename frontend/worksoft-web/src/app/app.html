@@ -74,13 +74,10 @@
         </div>
       </header>
       <main id="main-content" class="page-content">
-        <div class="alert success" role="note">
-          <strong>Modo local</strong> ·
-          {{
-            workspace.browserMemory
-              ? 'Datos en memoria. Se borran al recargar la página.'
-              : 'API en memoria. Los datos se borran al reiniciar el servidor.'
-          }}
+        <div class="storage-note" role="note">
+          <app-icon name="check" /><span
+            >PostgreSQL · Empresas y cuentas guardadas en la base de datos.</span
+          >
         </div>
         @if (notices.message()) {
           <div class="alert success" role="status">

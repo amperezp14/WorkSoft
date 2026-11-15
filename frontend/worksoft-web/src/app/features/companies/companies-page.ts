@@ -31,10 +31,7 @@ import { CompaniesApi, Company } from './companies.api';
       <section class="summary-card">
         <span class="summary-icon mint"><app-icon name="lock" /></span>
         <div>
-          <span>Entorno de trabajo</span
-          ><strong class="text-value">{{
-            workspace.browserMemory ? 'Memoria del navegador' : 'API local'
-          }}</strong>
+          <span>Entorno de trabajo</span><strong class="text-value">{{ 'PostgreSQL' }}</strong>
         </div>
       </section>
       <section class="summary-card">
@@ -150,8 +147,8 @@ import { CompaniesApi, Company } from './companies.api';
     </section>
     <div class="workspace-note">
       <app-icon name="lock" /><span
-        >Los datos de este espacio local son temporales. Puedes crear y consultar empresas sin
-        iniciar sesión.</span
+        >Las empresas se guardan en PostgreSQL. Selecciona una para configurar su plan de
+        cuentas.</span
       ><button class="text-button" (click)="load(true)" [disabled]="loading()">
         Actualizar listado
       </button>

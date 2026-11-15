@@ -1,6 +1,8 @@
 spring:
+  config:
+    import: "optional:file:platform/local/.env[.properties],optional:file:../../platform/local/.env[.properties]"
   profiles:
-    default: local
+    default: postgres
   application:
     name: company-service
   datasource:
@@ -13,6 +15,7 @@ spring:
     mapper:
       allow-coercion-of-scalars: false
 server:
+  address: ${SERVER_ADDRESS:127.0.0.1}
   port: ${SERVER_PORT:8081}
 worksoft:
   cursor-secret: ${CURSOR_SECRET:}

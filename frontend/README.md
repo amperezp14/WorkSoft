@@ -1,12 +1,5 @@
 # Frontend WorkSoft
 
-Aplicación en worksoft-web. Para verla, con Node.js 24 LTS y npm 11:
-
-```bash
-cd worksoft-web
-npm ci
-npm start
-```
-
-Acceso directo en http://localhost:4200. No necesita backend, BD ni autenticación.
-Datos en memoria, borrados al recargar. Ver docs/run-frontend.md desde la raíz.
+Desde worksoft-web ejecutar npm ci y npm start (Node.js 24 LTS/npm 11).
+El frontend usa la API Java y PostgreSQL. No requiere Keycloak; no tiene almacén demo.
+Ver [arranque y plan de cuentas](../docs/run-postgres-accounting.md).

@@ -118,8 +118,11 @@ import { CompaniesApi, IdempotencyKeys, normalizeCompany } from './companies.api
           </div>
         </dl>
         <hr />
-        <h3>Espacio de prueba</h3>
-        <p>Puedes crear y consultar empresas en este espacio local sin iniciar sesión.</p>
+        <h3>Plan contable inicial</h3>
+        <p>
+          La empresa se guardará en PostgreSQL con un catálogo contable inicial de referencia para
+          comerciantes.
+        </p>
         <p class="muted">
           El registro en WorkSoft no inscribe ni habilita a la empresa ante la DIAN. Verifica los
           datos con su documentación tributaria.

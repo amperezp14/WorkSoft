@@ -7,6 +7,14 @@ export function apiErrorMessage(error: unknown): string {
   if (error.status === 0)
     return 'No hay conexión con el servidor. Comprueba tu conexión y vuelve a intentarlo.';
   switch (error.error?.code) {
+    case 'ACCOUNT_CONFLICT':
+      return 'Ya existe una cuenta con ese código en esta empresa.';
+    case 'ACCOUNT_VERSION_CONFLICT':
+      return 'Otra edición cambió esta cuenta. Actualiza la tabla antes de editarla de nuevo.';
+    case 'ACCOUNT_HIERARCHY_CONFLICT':
+      return 'Revisa la cuenta superior: debe existir, estar activa y no permitir movimientos. Una cuenta con hijas no puede recibir movimientos ni desactivarse mientras tenga hijas activas.';
+    case 'ACCOUNT_NOT_FOUND':
+      return 'La cuenta no está disponible en esta empresa.';
     case 'IDEMPOTENCY_CONFLICT':
       return 'Este intento ya se utilizó con otros datos. Revisa el formulario.';
     case 'COMPANY_CONFLICT':

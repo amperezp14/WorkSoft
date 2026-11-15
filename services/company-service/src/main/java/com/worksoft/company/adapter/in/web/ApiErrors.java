@@ -17,12 +17,16 @@ public class ApiErrors {
     @ExceptionHandler(BusinessException.class)
     ResponseEntity<ProblemDetail> business(BusinessException ex) {
         int status=switch(ex.code()) {
-            case VALIDATION_ERROR -> 400; case FORBIDDEN -> 403; case COMPANY_NOT_FOUND -> 404;
-            case COMPANY_CONFLICT, IDEMPOTENCY_CONFLICT -> 409; case TEMPORARILY_UNAVAILABLE -> 503;
+            case VALIDATION_ERROR -> 400; case FORBIDDEN -> 403; case COMPANY_NOT_FOUND, ACCOUNT_NOT_FOUND -> 404;
+            case COMPANY_CONFLICT, IDEMPOTENCY_CONFLICT, ACCOUNT_CONFLICT, ACCOUNT_VERSION_CONFLICT, ACCOUNT_HIERARCHY_CONFLICT -> 409; case TEMPORARILY_UNAVAILABLE -> 503;
         };
         String title=switch(ex.code()) {
             case VALIDATION_ERROR -> "Solicitud inválida"; case FORBIDDEN -> "Operación no permitida";
             case COMPANY_NOT_FOUND -> "Empresa no encontrada";
+            case ACCOUNT_NOT_FOUND -> "Cuenta no encontrada";
+            case ACCOUNT_CONFLICT -> "El código ya existe en esta empresa";
+            case ACCOUNT_VERSION_CONFLICT -> "La cuenta cambió. Actualiza la tabla antes de editar";
+            case ACCOUNT_HIERARCHY_CONFLICT -> "Revisa la cuenta superior, su estado y sus movimientos";
             case COMPANY_CONFLICT -> "No se puede registrar la empresa";
             case IDEMPOTENCY_CONFLICT -> "La clave ya se utilizó con otros datos";
             case TEMPORARILY_UNAVAILABLE -> "Servicio temporalmente no disponible";

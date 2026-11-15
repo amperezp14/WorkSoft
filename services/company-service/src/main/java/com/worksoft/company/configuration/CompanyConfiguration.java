@@ -21,11 +21,11 @@ public class CompanyConfiguration {
         });
     }
     @Bean Clock clock() { return Clock.systemUTC(); }
-    @Bean @Profile("!local") CompanyStore companyStore(JdbcTemplate jdbc, PlatformTransactionManager manager, Clock clock) {
-        return new PostgresCompanyStore(jdbc,new TransactionTemplate(manager),clock);
+    @Bean @Profile("!local") CompanyStore companyStore(JdbcTemplate jdbc, PlatformTransactionManager manager, Clock clock, org.springframework.core.env.Environment environment) {
+        return new PostgresCompanyStore(jdbc,new TransactionTemplate(manager),clock,environment.matchesProfiles("postgres"));
     }
     @Bean @Profile("!local") CursorCodec cursorCodec(@Value("${worksoft.cursor-secret}") String secret,Clock clock) {
-        return new SignedCursorCodec(secret,clock);
+        return new SignedCursorCodec(secret.isBlank() ? java.util.UUID.randomUUID().toString() : secret,clock);
     }
     @Bean CompanyService companyService(CompanyStore store,CursorCodec cursors,Clock clock) {
         return new CompanyService(store,cursors,clock);

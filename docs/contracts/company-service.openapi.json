@@ -3,7 +3,7 @@
   "info": {
     "title": "WorkSoft — Empresas",
     "version": "1.0.0",
-    "description": "API del perfil local, sin autenticación y con datos volátiles. NIT y DV tienen validación estructural; no validación DIAN."
+    "description": "Empresas persistidas en PostgreSQL, contexto local sin login. Cada nueva empresa recibe el catálogo inicial de referencia del plan contable. Validación de NIT/DV estructural, no DIAN."
   },
   "servers": [
     {
@@ -17,7 +17,7 @@
       "post": {
         "operationId": "createCompany",
         "summary": "Registrar empresa y membresía inicial",
-        "description": "Crea una empresa en memoria del servidor. Un reintento con la misma clave y datos reproduce el resultado durante 24 horas dentro de la vida del proceso. Sin persistencia durable ni proveedor de identidad.",
+        "description": "Crea empresa y catálogo contable inicial en una transacción PostgreSQL con idempotencia. Reintentos idénticos con la misma clave reproducen el resultado durante 24 horas.",
         "parameters": [
           {
             "in": "header",
