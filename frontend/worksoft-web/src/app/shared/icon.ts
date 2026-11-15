@@ -11,6 +11,18 @@ import { Component, input } from '@angular/core';
     aria-hidden="true"
   >
     @switch (name()) {
+      @case ('grid') {
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" />
+      }
+      @case ('ledger') {
+        <path d="M4 4h16v16H4zM9 4v16M9 9h11M13 13h3m-3 3h3" />
+      }
+      @case ('invoice') {
+        <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 7h6m-6 4h6m-6 4h3" />
+      }
       @case ('plus') {
         <path d="M12 5v14M5 12h14" />
       }

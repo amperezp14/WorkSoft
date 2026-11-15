@@ -7,14 +7,49 @@
       >
       <div class="workspace-label">
         <span class="workspace-tile">WS</span>
-        <div><strong>Mi espacio de trabajo</strong><span>Gestión empresarial</span></div>
+        <div>
+          <strong [title]="company()?.legalName || 'Mi espacio de trabajo'">{{
+            company()?.legalName || 'Mi espacio de trabajo'
+          }}</strong
+          ><span>{{ company() ? 'Empresa seleccionada' : 'Gestión empresarial' }}</span>
+        </div>
       </div>
       <span class="nav-label">PRINCIPAL</span>
       <nav aria-label="Navegación principal">
-        <a class="nav-item" routerLink="/empresas" routerLinkActive="active"
+        <a
+          class="nav-item"
+          routerLink="/empresas"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
           ><app-icon /> Empresas <span class="nav-indicator"></span
         ></a>
       </nav>
+      @if (company(); as selected) {
+        <div class="company-module-nav">
+          <span class="nav-label">EMPRESA ACTUAL</span>
+          <nav aria-label="Módulos de la empresa">
+            <a
+              class="nav-item"
+              [routerLink]="['/empresas', selected.id]"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              ><app-icon name="grid" /> Módulos</a
+            >
+            <a
+              class="nav-item"
+              [routerLink]="['/empresas', selected.id, 'contabilidad']"
+              routerLinkActive="active"
+              ><app-icon name="ledger" /> Contabilidad</a
+            >
+            <a
+              class="nav-item"
+              [routerLink]="['/empresas', selected.id, 'facturacion']"
+              routerLinkActive="active"
+              ><app-icon name="invoice" /> Facturación</a
+            >
+          </nav>
+        </div>
+      }
       <div class="sidebar-note">
         <span class="eyebrow">PASO A PASO</span>
         <p>Una base organizada para hacer crecer tu operación.</p>
@@ -27,7 +62,12 @@
     </aside>
     <div class="workspace-main">
       <header class="topbar">
-        <span class="breadcrumb">Mi espacio <span>/</span> <strong>Empresas</strong></span>
+        <span class="breadcrumb"
+          >Mi espacio <span>/</span>
+          <strong [title]="company()?.legalName || 'Empresas'">{{
+            company()?.legalName || 'Empresas'
+          }}</strong></span
+        >
         <div class="user-actions">
           <span class="user-avatar">{{ workspace.initials() }}</span
           ><span class="user-name">{{ workspace.username() }}</span>

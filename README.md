@@ -17,6 +17,9 @@ Abrir http://localhost:4200. Acceso directo, sin login, Docker, PostgreSQL,
 Keycloak ni backend. Los datos viven en memoria del navegador y se borran al
 recargar la página. La interfaz muestra esta condición como Modo local.
 
+Al abrir una empresa puedes seleccionar Contabilidad o Facturación y recorrer
+sus menús. Las operaciones contables y de facturación están en preparación.
+
 ## Backend opcional
 
 Con JDK 25:

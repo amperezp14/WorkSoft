@@ -123,8 +123,8 @@ import { CompaniesApi, Company } from './companies.api';
                     <a
                       class="row-link"
                       [routerLink]="['/empresas', company.id]"
-                      [attr.aria-label]="'Ver empresa ' + company.legalName"
-                      >Ver empresa <app-icon name="arrow"
+                      [attr.aria-label]="'Abrir empresa ' + company.legalName"
+                      >Abrir empresa <app-icon name="arrow"
                     /></a>
                   </td>
                 </tr>
