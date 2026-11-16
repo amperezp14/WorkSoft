@@ -1,0 +1,175 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">CONTABILIDAD</span>
+    <h2>Terceros</h2>
+    <p>Identificación y contacto de las personas y empresas relacionadas.</p>
+  </div>
+  <button class="button primary" (click)="newParty()">Nuevo tercero</button>
+</div>
+@if (success()) {
+  <div class="alert success" role="status">{{ success() }}</div>
+}
+@if (error()) {
+  <div class="alert error" role="alert">{{ error() }}</div>
+}
+<div class="accounts-layout">
+  <section class="panel">
+    <div class="panel-toolbar">
+      <h3>Terceros de la empresa</h3>
+      <a
+        class="text-button"
+        [routerLink]="['/empresas', context.company()!.id, 'contabilidad', 'comprobantes']"
+        >Ir a comprobantes →</a
+      >
+    </div>
+    <form class="account-search" (submit)="$event.preventDefault(); search()">
+      <label class="sr-only" for="party-search">Buscar terceros</label
+      ><input
+        id="party-search"
+        placeholder="Nombre o identificación"
+        maxlength="100"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)"
+      /><button class="button secondary small" [disabled]="loading()">Buscar</button>
+    </form>
+    @if (loading()) {
+      <div class="empty-state" role="status">
+        <span class="spinner"></span>
+        <p>Consultando terceros…</p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Tercero</th>
+              <th>Identificación</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of items(); track p.id) {
+              <tr>
+                <td>
+                  <strong>{{ p.name }}</strong
+                  ><span class="account-name">{{ p.email }}</span>
+                </td>
+                <td>
+                  {{ p.documentType }} {{ p.documentNumber
+                  }}{{ p.verificationDigit ? '-' + p.verificationDigit : '' }}
+                </td>
+                <td>
+                  <span class="status" [class.inactive]="!p.active">{{
+                    p.active ? 'Activo' : 'Inactivo'
+                  }}</span>
+                </td>
+                <td>
+                  <button
+                    class="text-button"
+                    [attr.aria-label]="'Editar tercero ' + p.documentNumber"
+                    (click)="edit(p)"
+                    [disabled]="saving()"
+                  >
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="no-results">No hay terceros para esta consulta.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span>{{ total() }} terceros · Página {{ page() + 1 }}</span>
+        <div class="pagination-actions">
+          <button
+            class="button secondary small"
+            (click)="load(page() - 1)"
+            [disabled]="page() === 0"
+          >
+            Anterior</button
+          ><button
+            class="button secondary small"
+            (click)="load(page() + 1)"
+            [disabled]="(page() + 1) * 25 >= total()"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+    }
+  </section>
+  <section class="panel account-form">
+    <h3>{{ editing() ? 'Editar tercero' : 'Nuevo tercero' }}</h3>
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="field">
+        <label for="party-type">Tipo de identificación *</label
+        ><select id="party-type" formControlName="documentType">
+          <option value="NIT">NIT</option>
+          <option value="CC">Cédula de ciudadanía</option>
+          <option value="CE">Cédula de extranjería</option>
+          <option value="PASSPORT">Pasaporte</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="party-number">Identificación *</label
+        ><input id="party-number" formControlName="documentNumber" maxlength="30" />
+        <p class="field-help">Sin puntos ni espacios. El NIT se conserva como texto.</p>
+      </div>
+      @if (documentType() === 'NIT') {
+        <div class="field">
+          <label for="party-dv">Dígito de verificación *</label
+          ><input
+            id="party-dv"
+            formControlName="verificationDigit"
+            inputmode="numeric"
+            maxlength="1"
+          />
+        </div>
+      }
+      <div class="field">
+        <label for="party-name">Nombre o razón social *</label
+        ><input id="party-name" formControlName="name" maxlength="200" />
+      </div>
+      <div class="field">
+        <label for="party-category">Relación</label
+        ><select id="party-category" formControlName="category">
+          <option value="OTHER">Otro tercero</option>
+          <option value="CUSTOMER">Cliente</option>
+          <option value="SUPPLIER">Proveedor</option>
+          <option value="BOTH">Cliente y proveedor</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="party-email">Correo electrónico</label
+        ><input id="party-email" formControlName="email" type="email" maxlength="200" />
+      </div>
+      <div class="field">
+        <label for="party-phone">Teléfono</label
+        ><input id="party-phone" formControlName="phone" maxlength="30" />
+      </div>
+      <div class="field">
+        <label for="party-address">Dirección</label
+        ><input id="party-address" formControlName="address" maxlength="250" />
+      </div>
+      <label class="checkbox-field"
+        ><input type="checkbox" formControlName="active" /> Tercero activo</label
+      >
+      @if (formError()) {
+        <p class="field-error" role="alert">{{ formError() }}</p>
+      }
+      <div class="form-actions">
+        <button class="button secondary" type="button" (click)="newParty()" [disabled]="saving()">
+          Cancelar</button
+        ><button class="button primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar tercero' }}
+        </button>
+      </div>
+    </form>
+    <p class="field-help">La identificación tiene validación de formato; no se consulta la DIAN.</p>
+  </section>
+</div>

@@ -31,6 +31,19 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/accounting/accounts-page').then((m) => m.AccountsPage),
       },
+      {
+        path: 'contabilidad/terceros',
+        loadComponent: () => import('./features/parties/parties-page').then((m) => m.PartiesPage),
+      },
+      {
+        path: 'contabilidad/comprobantes',
+        canDeactivate: [
+          (component: import('./features/journals/journals-page').JournalsPage) =>
+            component.canLeave(),
+        ],
+        loadComponent: () =>
+          import('./features/journals/journals-page').then((m) => m.JournalsPage),
+      },
       { path: 'contabilidad', loadComponent: modulePage, data: { module: 'contabilidad' } },
       {
         path: 'contabilidad/:section',

@@ -19,8 +19,9 @@ public/config.json solo contiene apiBaseUrl. No contiene contraseñas; las crede
 de PostgreSQL pertenecen al backend. Si la API o la BD falla se muestra un error:
 no se utilizan datos locales como sustituto.
 
-Facturación y las otras opciones contables conservan su navegación inicial; la
-emisión DIAN y los comprobantes aún no están implementados.
+Terceros y Comprobantes incluyen formularios conectados a PostgreSQL. Consultar
+[la guía del módulo](run-third-parties-journals.md). Facturación conserva su
+navegación inicial; la emisión DIAN sigue pendiente.
 
 npm test ejecuta las pruebas unitarias; npm run build genera los archivos estáticos.
 Las pruebas de navegador necesitan la API y una BD de pruebas; no usan mocks de

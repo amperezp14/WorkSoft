@@ -1,48 +1,91 @@
 package com.worksoft.company.adapter.in.web;
 
+import com.worksoft.company.domain.exception.BusinessException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.dao.DataAccessException;
-import com.worksoft.company.domain.exception.BusinessException;
 
 @RestControllerAdvice
 public class ApiErrors {
-    public static ProblemDetail problem(int status, String code, String title) {
-        var p=ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(status),title);p.setType(java.net.URI.create("urn:worksoft:problem:"+code.toLowerCase(java.util.Locale.ROOT)));p.setTitle(title);p.setProperty("code",code);return p;
-    }
-    @ExceptionHandler(BusinessException.class)
-    ResponseEntity<ProblemDetail> business(BusinessException ex) {
-        int status=switch(ex.code()) {
-            case VALIDATION_ERROR -> 400; case FORBIDDEN -> 403; case COMPANY_NOT_FOUND, ACCOUNT_NOT_FOUND -> 404;
-            case COMPANY_CONFLICT, IDEMPOTENCY_CONFLICT, ACCOUNT_CONFLICT, ACCOUNT_VERSION_CONFLICT, ACCOUNT_HIERARCHY_CONFLICT -> 409; case TEMPORARILY_UNAVAILABLE -> 503;
+  public static ProblemDetail problem(int status, String code, String title) {
+    var p = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(status), title);
+    p.setType(
+        java.net.URI.create("urn:worksoft:problem:" + code.toLowerCase(java.util.Locale.ROOT)));
+    p.setTitle(title);
+    p.setProperty("code", code);
+    return p;
+  }
+
+  @ExceptionHandler(BusinessException.class)
+  ResponseEntity<ProblemDetail> business(BusinessException ex) {
+    int status =
+        switch (ex.code()) {
+          case VALIDATION_ERROR, INVALID_JOURNAL_LINE -> 400;
+          case FORBIDDEN -> 403;
+          case COMPANY_NOT_FOUND, ACCOUNT_NOT_FOUND, PARTY_NOT_FOUND, VOUCHER_NOT_FOUND -> 404;
+          case COMPANY_CONFLICT,
+              IDEMPOTENCY_CONFLICT,
+              ACCOUNT_CONFLICT,
+              ACCOUNT_VERSION_CONFLICT,
+              ACCOUNT_HIERARCHY_CONFLICT,
+              PARTY_CONFLICT,
+              VERSION_CONFLICT,
+              VOUCHER_POSTED,
+              POSTING_REFERENCE_INVALID ->
+              409;
+          case VOUCHER_UNBALANCED -> 422;
+          case TEMPORARILY_UNAVAILABLE -> 503;
         };
-        String title=switch(ex.code()) {
-            case VALIDATION_ERROR -> "Solicitud inválida"; case FORBIDDEN -> "Operación no permitida";
-            case COMPANY_NOT_FOUND -> "Empresa no encontrada";
-            case ACCOUNT_NOT_FOUND -> "Cuenta no encontrada";
-            case ACCOUNT_CONFLICT -> "El código ya existe en esta empresa";
-            case ACCOUNT_VERSION_CONFLICT -> "La cuenta cambió. Actualiza la tabla antes de editar";
-            case ACCOUNT_HIERARCHY_CONFLICT -> "Revisa la cuenta superior, su estado y sus movimientos";
-            case COMPANY_CONFLICT -> "No se puede registrar la empresa";
-            case IDEMPOTENCY_CONFLICT -> "La clave ya se utilizó con otros datos";
-            case TEMPORARILY_UNAVAILABLE -> "Servicio temporalmente no disponible";
+    String title =
+        switch (ex.code()) {
+          case VALIDATION_ERROR -> "Solicitud inválida";
+          case FORBIDDEN -> "Operación no permitida";
+          case COMPANY_NOT_FOUND -> "Empresa no encontrada";
+          case PARTY_NOT_FOUND -> "Tercero no encontrado";
+          case PARTY_CONFLICT -> "La identificación ya está registrada en esta empresa";
+          case VERSION_CONFLICT -> "El registro cambió. Actualiza antes de editar";
+          case VOUCHER_NOT_FOUND -> "Comprobante no encontrado";
+          case VOUCHER_POSTED -> "El comprobante contabilizado no admite modificaciones";
+          case VOUCHER_UNBALANCED ->
+              "Se requieren al menos dos líneas, débitos y créditos iguales y un total positivo";
+          case INVALID_JOURNAL_LINE ->
+              "Cada línea requiere cuenta, tercero y un solo valor positivo con máximo dos"
+                  + " decimales";
+          case POSTING_REFERENCE_INVALID ->
+              "Revisa las cuentas y terceros: deben pertenecer a la empresa, estar activos y las"
+                  + " cuentas permitir movimientos sin tener hijas";
+          case ACCOUNT_NOT_FOUND -> "Cuenta no encontrada";
+          case ACCOUNT_CONFLICT -> "El código ya existe en esta empresa";
+          case ACCOUNT_VERSION_CONFLICT -> "La cuenta cambió. Actualiza la tabla antes de editar";
+          case ACCOUNT_HIERARCHY_CONFLICT ->
+              "Revisa la cuenta superior, su estado y sus movimientos";
+          case COMPANY_CONFLICT -> "No se puede registrar la empresa";
+          case IDEMPOTENCY_CONFLICT -> "La clave ya se utilizó con otros datos";
+          case TEMPORARILY_UNAVAILABLE -> "Servicio temporalmente no disponible";
         };
-        var builder=ResponseEntity.status(status);
-        if(status==503)builder.header("Retry-After","1");
-        return builder.body(problem(status,ex.code().name(),title));
-    }
-    @ExceptionHandler({MethodArgumentNotValidException.class, MissingRequestHeaderException.class,
-            MethodArgumentTypeMismatchException.class,HttpMessageNotReadableException.class})
-    ResponseEntity<ProblemDetail> invalid(Exception ex) {
-        return ResponseEntity.badRequest().body(problem(400,"VALIDATION_ERROR","Solicitud inválida"));
-    }
-    @ExceptionHandler(DataAccessException.class)
-    ResponseEntity<ProblemDetail> unavailable(DataAccessException ex) {
-        return ResponseEntity.status(503).header("Retry-After","1")
-                .body(problem(503,"TEMPORARILY_UNAVAILABLE","Servicio temporalmente no disponible"));
-    }
+    var builder = ResponseEntity.status(status);
+    if (status == 503) builder.header("Retry-After", "1");
+    return builder.body(problem(status, ex.code().name(), title));
+  }
+
+  @ExceptionHandler({
+    MethodArgumentNotValidException.class,
+    MissingRequestHeaderException.class,
+    MethodArgumentTypeMismatchException.class,
+    HttpMessageNotReadableException.class
+  })
+  ResponseEntity<ProblemDetail> invalid(Exception ex) {
+    return ResponseEntity.badRequest().body(problem(400, "VALIDATION_ERROR", "Solicitud inválida"));
+  }
+
+  @ExceptionHandler(DataAccessException.class)
+  ResponseEntity<ProblemDetail> unavailable(DataAccessException ex) {
+    return ResponseEntity.status(503)
+        .header("Retry-After", "1")
+        .body(problem(503, "TEMPORARILY_UNAVAILABLE", "Servicio temporalmente no disponible"));
+  }
 }

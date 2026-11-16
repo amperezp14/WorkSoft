@@ -1,0 +1,371 @@
+<div class="page-heading no-print">
+  <div>
+    <span class="eyebrow">CONTABILIDAD · COP</span>
+    <h2>Comprobantes contables</h2>
+    <p>Prepara borradores y contabiliza movimientos balanceados.</p>
+  </div>
+  <button class="button primary" (click)="newVoucher()" [disabled]="saving() || opening()">
+    Nuevo comprobante
+  </button>
+</div>
+@if (error()) {
+  <div class="alert error no-print" role="alert">{{ error() }}</div>
+}
+@if (success()) {
+  <div class="alert success no-print" role="status">{{ success() }}</div>
+}
+<div class="journal-preparation no-print">
+  <strong>Antes de empezar</strong
+  ><a [routerLink]="['/empresas', context.company()!.id, 'contabilidad', 'terceros']"
+    >Crear terceros</a
+  ><a [routerLink]="['/empresas', context.company()!.id, 'contabilidad', 'plan-de-cuentas']"
+    >Configurar cuentas con movimientos</a
+  >
+</div>
+<section class="panel journal-list no-print">
+  <div class="panel-toolbar">
+    <h3>Comprobantes de esta empresa</h3>
+    <form class="journal-search" (submit)="$event.preventDefault(); search()">
+      <label class="sr-only" for="journal-search">Buscar comprobantes</label
+      ><input
+        id="journal-search"
+        [value]="query()"
+        (input)="query.set($any($event.target).value)"
+        maxlength="100"
+        placeholder="Descripción o consecutivo"
+      /><button class="button secondary small" [disabled]="loading()">Buscar</button>
+    </form>
+  </div>
+  @if (loading()) {
+    <p class="empty-state" role="status">Consultando comprobantes…</p>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Comprobante</th>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Valor débito</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items(); track item.id) {
+            <tr>
+              <td>
+                <strong>{{ item.displayNumber }}</strong
+                ><span class="account-name">{{
+                  item.status === 'POSTED' ? 'Contabilizado' : 'Borrador'
+                }}</span>
+              </td>
+              <td>{{ item.date }}</td>
+              <td class="journal-description">{{ item.description }}</td>
+              <td>{{ amount(item.totalDebit) }}</td>
+              <td>
+                <button
+                  class="text-button"
+                  [attr.aria-label]="'Abrir comprobante ' + item.id"
+                  (click)="open(item.id)"
+                  [disabled]="saving() || opening()"
+                >
+                  Abrir
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="no-results">No hay comprobantes para esta consulta.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">
+      <span>{{ total() }} comprobantes · Página {{ page() + 1 }}</span>
+      <div class="pagination-actions">
+        <button
+          class="button secondary small"
+          (click)="loadList(page() - 1)"
+          [disabled]="page() === 0"
+        >
+          Anterior</button
+        ><button
+          class="button secondary small"
+          (click)="loadList(page() + 1)"
+          [disabled]="(page() + 1) * 25 >= total()"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  }
+</section>
+<section class="panel journal-editor no-print">
+  <div class="form-intro">
+    <div>
+      <h3>{{ selected()?.displayNumber || 'Nuevo comprobante' }}</h3>
+      <p>
+        {{
+          selected()?.status === 'POSTED'
+            ? 'Contabilizado · Solo consulta'
+            : 'Borrador editable · No afecta los movimientos contabilizados'
+        }}
+      </p>
+    </div>
+    @if (selected()) {
+      <button class="button secondary small" (click)="print()">Imprimir / PDF</button>
+    }
+  </div>
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <div class="journal-header-grid">
+      <div class="field">
+        <label for="journal-date">Fecha *</label
+        ><input id="journal-date" type="date" formControlName="date" />
+      </div>
+      <div class="field">
+        <label for="journal-type">Tipo *</label
+        ><select id="journal-type" formControlName="type">
+          <option value="GENERAL">Comprobante general</option>
+          <option value="INGRESO">Ingreso</option>
+          <option value="EGRESO">Egreso</option>
+          <option value="AJUSTE">Ajuste</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="journal-origin">Origen de la operación *</label
+        ><input
+          id="journal-origin"
+          formControlName="origin"
+          maxlength="200"
+          placeholder="Ej. Pago a proveedor"
+        />
+      </div>
+      <div class="field">
+        <label for="journal-prepared">Elaborado por *</label
+        ><input id="journal-prepared" formControlName="preparedBy" maxlength="100" />
+      </div>
+      <div class="field journal-wide">
+        <label for="journal-description">Descripción del comprobante *</label
+        ><textarea
+          id="journal-description"
+          formControlName="description"
+          maxlength="1000"
+          rows="2"
+        ></textarea>
+      </div>
+      <div class="field journal-wide">
+        <label for="journal-support">Referencia al soporte *</label
+        ><input
+          id="journal-support"
+          formControlName="supportReference"
+          maxlength="500"
+          placeholder="Identificador o ubicación del documento archivado"
+        />
+        <p class="field-help">
+          Conserva el soporte físico o electrónico en el archivo indicado. Aquí se guarda su
+          referencia.
+        </p>
+      </div>
+    </div>
+    @if (selected()?.status !== 'POSTED') {
+      <div class="lookup-filters">
+        <div class="field">
+          <label for="lookup-account">Filtrar cuentas disponibles</label
+          ><input
+            id="lookup-account"
+            [value]="accountQuery()"
+            (input)="accountQuery.set($any($event.target).value)"
+            maxlength="100"
+            placeholder="Código o nombre"
+          />
+        </div>
+        <div class="field">
+          <label for="lookup-party">Filtrar terceros disponibles</label
+          ><input
+            id="lookup-party"
+            [value]="partyQuery()"
+            (input)="partyQuery.set($any($event.target).value)"
+            maxlength="100"
+            placeholder="Nombre o identificación"
+          />
+        </div>
+        <button
+          class="button secondary small"
+          type="button"
+          (click)="loadOptions()"
+          [disabled]="optionsLoading()"
+        >
+          Actualizar opciones
+        </button>
+      </div>
+      @if (!accounts().length || !parties().length) {
+        <p class="reference-note">
+          Necesitas terceros activos y cuentas activas que permitan movimientos y no tengan hijas.
+          Usa los enlaces de preparación de esta página.
+        </p>
+      }
+      @if (moreOptions()) {
+        <p class="field-help">
+          Se muestran hasta 50 opciones por búsqueda. Afina el filtro para encontrar otras.
+        </p>
+      }
+    }
+    <div class="journal-lines" formArrayName="lines">
+      @for (line of lines.controls; track line; let i = $index) {
+        <div class="journal-line" [formGroupName]="i" [attr.data-testid]="'journal-line-' + i">
+          <div class="line-number">{{ i + 1 }}</div>
+          <div class="field">
+            <label [for]="'line-account-' + i">Cuenta {{ i + 1 }} *</label
+            ><select [id]="'line-account-' + i" formControlName="accountId">
+              <option value="">Selecciona una cuenta</option>
+              @for (a of accounts(); track a.id) {
+                <option [value]="a.id">{{ a.code }} · {{ a.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label [for]="'line-party-' + i">Tercero {{ i + 1 }} *</label
+            ><select [id]="'line-party-' + i" formControlName="partyId">
+              <option value="">Selecciona un tercero</option>
+              @for (p of parties(); track p.id) {
+                <option [value]="p.id">{{ p.documentNumber }} · {{ p.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label [for]="'line-debit-' + i">Débito {{ i + 1 }}</label
+            ><input
+              [id]="'line-debit-' + i"
+              formControlName="debit"
+              inputmode="decimal"
+              maxlength="19"
+            />
+          </div>
+          <div class="field">
+            <label [for]="'line-credit-' + i">Crédito {{ i + 1 }}</label
+            ><input
+              [id]="'line-credit-' + i"
+              formControlName="credit"
+              inputmode="decimal"
+              maxlength="19"
+            />
+          </div>
+          <div class="field line-detail">
+            <label [for]="'line-detail-' + i">Detalle {{ i + 1 }}</label
+            ><input [id]="'line-detail-' + i" formControlName="description" maxlength="300" />
+          </div>
+          @if (selected()?.status !== 'POSTED') {
+            <button
+              class="text-button remove-line"
+              type="button"
+              [attr.aria-label]="'Quitar línea ' + (i + 1)"
+              (click)="removeLine(i)"
+              [disabled]="lines.length <= 1 || saving()"
+            >
+              Quitar
+            </button>
+          }
+        </div>
+      }
+    </div>
+    @if (selected()?.status !== 'POSTED') {
+      <button
+        class="button secondary small"
+        type="button"
+        (click)="addLine()"
+        [disabled]="lines.length >= 200 || saving()"
+      >
+        Agregar línea
+      </button>
+      <p class="field-help">
+        COP · Máximo dos decimales. Coma o punto decimal, sin separadores de miles.
+      </p>
+    }
+    <div class="journal-totals">
+      <div>
+        <span>Total débitos</span><strong>{{ money(totals().debit) }}</strong>
+      </div>
+      <div>
+        <span>Total créditos</span><strong>{{ money(totals().credit) }}</strong>
+      </div>
+      <div [class.balanced]="totals().balanced">
+        <span>Diferencia</span><strong>{{ money(totals().difference) }}</strong>
+      </div>
+    </div>
+    @if (formError()) {
+      <p class="field-error" role="alert">{{ formError() }}</p>
+    }
+    @if (selected()?.status !== 'POSTED') {
+      <div class="form-actions">
+        <button class="button secondary" type="submit" [disabled]="saving() || opening()">
+          {{ saving() ? 'Guardando…' : 'Guardar borrador' }}</button
+        ><button
+          class="button primary"
+          type="button"
+          (click)="post()"
+          [disabled]="saving() || opening() || !selected() || form.dirty || !totals().balanced"
+        >
+          Contabilizar
+        </button>
+      </div>
+      <p class="field-help">
+        Guarda primero el borrador. Contabilizar asigna el consecutivo y bloquea la edición. No es
+        una factura electrónica.
+      </p>
+    }
+  </form>
+</section>
+@if (selected(); as doc) {
+  <section class="voucher-print" aria-label="Vista de impresión del comprobante">
+    <header>
+      <h1>{{ doc.company.name }}</h1>
+      <p>NIT {{ doc.company.nit }}-{{ doc.company.verificationDigit }}</p>
+      <h2>Comprobante contable {{ doc.displayNumber }}</h2>
+      <p>
+        {{ doc.status === 'POSTED' ? 'CONTABILIZADO' : 'BORRADOR — SIN CONTABILIZAR' }} ·
+        {{ doc.header.date }} · {{ doc.header.type }} · COP
+      </p>
+    </header>
+    <p><strong>Origen:</strong> {{ doc.header.origin }}</p>
+    <p><strong>Descripción:</strong> {{ doc.header.description }}</p>
+    <p><strong>Soporte:</strong> {{ doc.header.supportReference }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Cuenta</th>
+          <th>Tercero</th>
+          <th>Detalle</th>
+          <th>Débito COP</th>
+          <th>Crédito COP</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of doc.lines; track $index) {
+          <tr>
+            <td>{{ row.accountCode }} {{ row.accountName }}</td>
+            <td>
+              {{ row.partyName }} · {{ row.partyDocumentType }} {{ row.partyDocumentNumber
+              }}{{ row.partyVerificationDigit ? '-' + row.partyVerificationDigit : '' }}
+            </td>
+            <td>{{ row.description }}</td>
+            <td>{{ amount(row.debit) }}</td>
+            <td>{{ amount(row.credit) }}</td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="3">Totales</th>
+          <th>{{ amount(doc.totalDebit) }}</th>
+          <th>{{ amount(doc.totalCredit) }}</th>
+        </tr>
+      </tfoot>
+    </table>
+    <p><strong>Elaborado por:</strong> {{ doc.header.preparedBy }}</p>
+    <p class="field-help">
+      La identificación del elaborador es declarada en el formulario; no representa una firma
+      electrónica.
+    </p>
+  </section>
+}

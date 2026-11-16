@@ -7,6 +7,22 @@ export function apiErrorMessage(error: unknown): string {
   if (error.status === 0)
     return 'No hay conexión con el servidor. Comprueba tu conexión y vuelve a intentarlo.';
   switch (error.error?.code) {
+    case 'PARTY_CONFLICT':
+      return 'La identificación ya está registrada en esta empresa.';
+    case 'PARTY_NOT_FOUND':
+      return 'El tercero no está disponible en esta empresa.';
+    case 'VERSION_CONFLICT':
+      return 'El registro cambió en otra edición. Actualiza antes de guardar.';
+    case 'VOUCHER_NOT_FOUND':
+      return 'El comprobante no está disponible en esta empresa.';
+    case 'VOUCHER_POSTED':
+      return 'El comprobante ya está contabilizado y no puede modificarse.';
+    case 'VOUCHER_UNBALANCED':
+      return 'Se requieren al menos dos líneas y débitos y créditos iguales, con total positivo.';
+    case 'INVALID_JOURNAL_LINE':
+      return 'Revisa cada línea: cuenta, tercero y un solo importe positivo con máximo dos decimales.';
+    case 'POSTING_REFERENCE_INVALID':
+      return 'Revisa las cuentas y terceros: deben ser de esta empresa, estar activos y las cuentas permitir movimientos sin tener hijas.';
     case 'ACCOUNT_CONFLICT':
       return 'Ya existe una cuenta con ese código en esta empresa.';
     case 'ACCOUNT_VERSION_CONFLICT':

@@ -1736,3 +1736,289 @@ dd {
     max-width: none;
   }
 }
+
+.journal-preparation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-bottom: 24px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.journal-preparation a {
+  color: var(--teal);
+  text-decoration: underline;
+}
+.journal-list {
+  margin-bottom: 26px;
+}
+.journal-description {
+  max-width: 350px;
+  white-space: normal;
+}
+.journal-search {
+  display: flex;
+  gap: 9px;
+}
+.journal-search input {
+  min-width: 0;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+}
+.journal-editor {
+  padding: 27px;
+}
+.journal-editor > .form-intro {
+  justify-content: space-between;
+}
+.journal-editor fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.journal-header-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+.journal-wide {
+  grid-column: 1/-1;
+}
+.lookup-filters {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px;
+  margin: 12px 0 20px;
+  background: #f5f8f3;
+  border-radius: 8px;
+}
+.lookup-filters .field {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.lookup-filters .button {
+  margin-top: 22px;
+}
+.journal-line {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1.4fr) minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 17px;
+  margin-bottom: 14px;
+}
+.journal-line .field {
+  margin-bottom: 0;
+  min-width: 0;
+}
+.journal-line input,
+.journal-line select {
+  min-width: 0;
+  max-width: 100%;
+  font-size: 0.8rem;
+}
+.journal-line label {
+  font-size: 0.72rem;
+}
+.line-number {
+  margin-top: 34px;
+  color: #95a598;
+  font-size: 0.75rem;
+}
+.line-detail {
+  grid-column: 2/5;
+}
+.remove-line {
+  align-self: center;
+  margin-top: 18px;
+}
+.journal-lines {
+  margin-bottom: 19px;
+}
+.journal-totals {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 17px;
+  margin: 28px 0;
+}
+.journal-totals > div {
+  min-width: 155px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.journal-totals span {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.journal-totals strong {
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+.journal-totals > div.balanced {
+  background: var(--mint);
+  border-color: #bddac9;
+  color: var(--teal);
+}
+.voucher-print {
+  display: none;
+}
+@media (max-width: 900px) {
+  .journal-line {
+    grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .journal-line .field:nth-child(4) {
+    grid-column: 2;
+  }
+  .journal-line .field:nth-child(5) {
+    grid-column: 3;
+  }
+  .line-detail {
+    grid-column: 2/4;
+  }
+  .remove-line {
+    grid-column: 2/4;
+    margin-top: 0;
+    justify-self: end;
+  }
+}
+@media (max-width: 640px) {
+  .journal-header-grid {
+    grid-template-columns: 1fr;
+  }
+  .journal-wide {
+    grid-column: auto;
+  }
+  .journal-editor {
+    padding: 20px 15px;
+  }
+  .lookup-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .lookup-filters .button {
+    margin-top: 0;
+  }
+  .journal-line {
+    padding: 12px;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .line-number {
+    grid-column: 1/-1;
+    margin-top: 0;
+  }
+  .journal-line .field:nth-child(2),
+  .journal-line .field:nth-child(3),
+  .journal-line .line-detail {
+    grid-column: 1/-1;
+  }
+  .journal-line .field:nth-child(4) {
+    grid-column: 1;
+  }
+  .journal-line .field:nth-child(5) {
+    grid-column: 2;
+  }
+  .remove-line {
+    grid-column: 1/-1;
+  }
+  .journal-totals {
+    justify-content: stretch;
+  }
+  .journal-totals > div {
+    flex: 1;
+    min-width: 130px;
+  }
+  .journal-search {
+    width: 100%;
+  }
+  .journal-search input {
+    flex: 1;
+  }
+  .module-stage {
+    white-space: normal;
+    max-width: 190px;
+    line-height: 1.5;
+  }
+}
+@media print {
+  @page {
+    margin: 15mm;
+  }
+  body {
+    background: white;
+    color: black;
+    font-size: 10pt;
+  }
+  .sidebar,
+  .topbar,
+  .page-footer,
+  .storage-note,
+  .skip-link,
+  .company-tabs,
+  .company-workspace-heading,
+  .back-link,
+  .no-print,
+  .page-content > .alert {
+    display: none !important;
+  }
+  .workspace,
+  .workspace-main,
+  .page-content {
+    display: block;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    min-height: 0;
+    width: 100%;
+  }
+  .voucher-print {
+    display: block;
+  }
+  .voucher-print header {
+    border-bottom: 1px solid #999;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+  .voucher-print h1 {
+    font-size: 18pt;
+  }
+  .voucher-print h2 {
+    margin: 14px 0;
+    font-size: 14pt;
+  }
+  .voucher-print p {
+    color: black;
+    margin: 9px 0;
+  }
+  .voucher-print table {
+    white-space: normal;
+    margin: 20px 0;
+    font-size: 9pt;
+  }
+  .voucher-print th,
+  .voucher-print td {
+    padding: 8px;
+    border: 1px solid #aaa;
+    font-size: 9pt;
+    overflow-wrap: anywhere;
+  }
+  .voucher-print thead {
+    display: table-header-group;
+  }
+  .voucher-print tr {
+    break-inside: avoid;
+  }
+  .voucher-print .field-help {
+    font-size: 8pt;
+  }
+}

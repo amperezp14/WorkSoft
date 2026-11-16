@@ -90,8 +90,8 @@ la edición con 409 y se debe actualizar la tabla antes de intentarlo nuevamente
   referencia de origen, versión y fecha de actualización.
 
 Las modificaciones del formulario afectan chart_accounts, no el catálogo global.
-No se crean saldos, facturas ni asientos ficticios. Los comprobantes y la operación
-fiscal se desarrollarán después.
+No se crean saldos, facturas ni asientos ficticios. Los comprobantes se registran
+desde [su formulario](run-third-parties-journals.md); la operación fiscal sigue pendiente.
 
 ## Consultas de comprobación
 
