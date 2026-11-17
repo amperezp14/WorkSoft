@@ -77,4 +77,32 @@ export const COMPANY_MODULES: readonly CompanyModule[] = [
       },
     ],
   },
+  {
+    path: 'nomina',
+    title: 'Nómina',
+    icon: 'people',
+    description: 'Administra empleados, contratos, novedades y liquidaciones mensuales.',
+    sections: [
+      {
+        id: 'empleados',
+        title: 'Empleados',
+        description: 'Vincula personas naturales del catálogo de terceros.',
+      },
+      {
+        id: 'contratos',
+        title: 'Contratos',
+        description: 'Registra condiciones de contratación ordinaria.',
+      },
+      {
+        id: 'parametros',
+        title: 'Parámetros y vigencias',
+        description: 'Revisa valores y fuentes antes de liquidar.',
+      },
+      {
+        id: 'periodos',
+        title: 'Liquidaciones y novedades',
+        description: 'Calcula y aprueba nómina mensual y desprendibles.',
+      },
+    ],
+  },
 ];

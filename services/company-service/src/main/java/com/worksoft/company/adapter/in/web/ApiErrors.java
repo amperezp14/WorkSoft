@@ -25,6 +25,16 @@ public class ApiErrors {
     int status =
         switch (ex.code()) {
           case VALIDATION_ERROR, INVALID_JOURNAL_LINE -> 400;
+          case NOMINA_NO_ENCONTRADA -> 404;
+          case NOMINA_REFERENCIA_INVALIDA,
+              NOMINA_CASO_NO_SOPORTADO,
+              NOMINA_PARAMETROS_INVALIDOS,
+              NOMINA_DEDUCCIONES_INVALIDAS,
+              NOMINA_PERIODO_CERRADO,
+              NOMINA_RECALCULAR,
+              NOMINA_REGISTRO_DUPLICADO,
+              NOMINA_SUPERPOSICION ->
+              409;
           case FORBIDDEN -> 403;
           case COMPANY_NOT_FOUND,
               ACCOUNT_NOT_FOUND,
@@ -55,6 +65,19 @@ public class ApiErrors {
     String title =
         switch (ex.code()) {
           case VALIDATION_ERROR -> "Solicitud inválida";
+          case NOMINA_NO_ENCONTRADA -> "Registro de nómina no encontrado";
+          case NOMINA_REFERENCIA_INVALIDA -> "Revisa el tercero, empleado y contrato de la empresa";
+          case NOMINA_CASO_NO_SOPORTADO ->
+              "Se requiere contrato ordinario de jornada completa que cubra todo el mes y salario"
+                  + " no inferior al mínimo de la vigencia";
+          case NOMINA_PARAMETROS_INVALIDOS ->
+              "Registra parámetros revisados que cubran el mes completo";
+          case NOMINA_DEDUCCIONES_INVALIDAS -> "Las deducciones superan el devengado";
+          case NOMINA_PERIODO_CERRADO -> "El estado del periodo no permite esta operación";
+          case NOMINA_RECALCULAR -> "Recalcula la nómina con los datos actuales antes de aprobar";
+          case NOMINA_REGISTRO_DUPLICADO ->
+              "Ya existe ese empleado, código o periodo mensual sin anular";
+          case NOMINA_SUPERPOSICION -> "Las fechas se superponen con otro contrato o vigencia";
           case FACTURACION_NO_ENCONTRADA -> "Registro de facturación no encontrado";
           case PRODUCTO_DUPLICADO -> "Ya existe un producto con ese código";
           case CONFIGURACION_FACTURACION_INVALIDA ->

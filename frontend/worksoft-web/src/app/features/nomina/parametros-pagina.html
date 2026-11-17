@@ -1,0 +1,161 @@
+<app-navegacion-nomina />
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">NÓMINA · VIGENCIAS</span>
+    <h2>Parámetros de liquidación</h2>
+    <p>Registra fuentes y responsable de revisión antes de calcular.</p>
+  </div>
+  <div class="billing-actions">
+    <button class="button secondary" (click)="referencia()" [disabled]="ocupado()">
+      Cargar referencia 2026</button
+    ><button class="button primary" (click)="nuevo()" [disabled]="ocupado()">Nueva vigencia</button>
+  </div>
+</div>
+<div class="alert billing-notice">
+  Estrategia ORDINARIA_LEY100_V1 para mes completo y dependiente ordinario. La referencia no
+  determina el régimen aplicable ni sustituye una revisión laboral y pensional.
+</div>
+@if (error()) {
+  <div class="alert error" role="alert">{{ error() }}</div>
+}
+@if (mensaje()) {
+  <div class="alert success" role="status">{{ mensaje() }}</div>
+}
+<div class="accounts-layout">
+  <section class="panel">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Vigencia</th>
+            <th>SMMLV / auxilio</th>
+            <th>Revisión</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of registros(); track p.id) {
+            <tr>
+              <td>{{ p.desde }}<br />{{ p.hasta }}</td>
+              <td>{{ importe(p.salarioMinimo) }}<br />{{ importe(p.auxilioTransporte) }}</td>
+              <td>{{ p.revisado ? 'Revisado por ' + p.responsableRevision : 'Pendiente' }}</td>
+              <td>
+                <button class="text-button" (click)="editar(p)" [disabled]="ocupado()">
+                  Editar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4">No hay parámetros guardados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel billing-form">
+    <h3>{{ editado ? 'Editar vigencia' : 'Nueva vigencia' }}</h3>
+    <form #formulario="ngForm" (ngSubmit)="guardar()">
+      <fieldset [disabled]="ocupado()">
+        <div class="form-grid">
+          <div class="field">
+            <label for="param-desde">Desde *</label
+            ><input
+              type="date"
+              id="param-desde"
+              name="desde"
+              [(ngModel)]="valores.desde"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="param-hasta">Hasta *</label
+            ><input
+              type="date"
+              id="param-hasta"
+              name="hasta"
+              [(ngModel)]="valores.hasta"
+              [min]="valores.desde"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="param-minimo">SMMLV COP *</label
+            ><input
+              id="param-minimo"
+              name="minimo"
+              [(ngModel)]="valores.salarioMinimo"
+              inputmode="decimal"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="param-auxilio">Auxilio mensual COP *</label
+            ><input
+              id="param-auxilio"
+              name="auxilio"
+              [(ngModel)]="valores.auxilioTransporte"
+              inputmode="decimal"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="param-salud">Salud trabajador % *</label
+            ><input
+              id="param-salud"
+              name="salud"
+              [(ngModel)]="valores.saludTrabajador"
+              inputmode="decimal"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="param-pension">Pensión trabajador % *</label
+            ><input
+              id="param-pension"
+              name="pension"
+              [(ngModel)]="valores.pensionTrabajador"
+              inputmode="decimal"
+              required
+            />
+          </div>
+          <div class="field full">
+            <label for="param-fuente">Fuentes y alcance de aplicación *</label
+            ><textarea
+              id="param-fuente"
+              name="fuente"
+              [(ngModel)]="valores.fuente"
+              required
+              maxlength="1500"
+              rows="4"
+            ></textarea>
+          </div>
+          <label class="checkbox-field full"
+            ><input type="checkbox" name="revisado" [(ngModel)]="valores.revisado" /> He revisado
+            estos parámetros para el régimen y vigencia aplicables</label
+          >
+          <div class="field full">
+            <label for="param-responsable"
+              >Responsable de revisión {{ valores.revisado ? '*' : '' }}</label
+            ><input
+              id="param-responsable"
+              name="responsable"
+              [(ngModel)]="valores.responsableRevision"
+              maxlength="100"
+              [required]="valores.revisado"
+            />
+          </div>
+        </div>
+        <p class="field-help">
+          Los intervalos no pueden superponerse. Para calcular deben cubrir todo el mes y estar
+          revisados. Solidaridad: 1 % desde 4 SMMLV y adicionales según los tramos de la estrategia;
+          IBC máximo 25 SMMLV.
+        </p>
+        <button class="button primary" [disabled]="ocupado() || formulario.invalid">
+          Guardar vigencia
+        </button>
+      </fieldset>
+    </form>
+  </section>
+</div>

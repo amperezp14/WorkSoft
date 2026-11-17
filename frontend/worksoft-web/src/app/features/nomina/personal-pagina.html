@@ -1,0 +1,272 @@
+<app-navegacion-nomina />
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">NÓMINA · COLOMBIA</span>
+    <h2>{{ esContratos ? 'Contratos laborales' : 'Empleados' }}</h2>
+    <p>
+      {{
+        esContratos
+          ? 'Contratos ordinarios a jornada completa, sin fechas superpuestas.'
+          : 'Vincula personas naturales del catálogo de terceros.'
+      }}
+    </p>
+  </div>
+  <button class="button primary" (click)="nuevo()" [disabled]="ocupado()">
+    {{ esContratos ? 'Nuevo contrato' : 'Nuevo empleado' }}
+  </button>
+</div>
+@if (error()) {
+  <div class="alert error" role="alert">{{ error() }}</div>
+}
+@if (mensaje()) {
+  <div class="alert success" role="status">{{ mensaje() }}</div>
+}
+<div class="accounts-layout">
+  <section class="panel">
+    <form class="account-search" (ngSubmit)="buscar()">
+      <label class="sr-only" for="personal-busqueda">Buscar</label
+      ><input
+        id="personal-busqueda"
+        name="busqueda"
+        [(ngModel)]="busqueda"
+        maxlength="100"
+        placeholder="Nombre o código"
+      /><button class="button secondary" [disabled]="ocupado()">Buscar</button>
+    </form>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ esContratos ? 'Empleado / contrato' : 'Empleado' }}</th>
+            <th>{{ esContratos ? 'Fechas' : 'Cargo' }}</th>
+            <th>{{ esContratos ? 'Salario COP' : 'Estado' }}</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (esContratos) {
+            @for (c of contratos(); track c.id) {
+              <tr>
+                <td>
+                  <strong>{{ c.empleadoNombre }}</strong
+                  ><br />{{ c.tipo }}
+                </td>
+                <td>{{ c.inicio }}<br />{{ c.fin || 'Sin fecha final' }}</td>
+                <td>{{ importe(c.salarioMensual) }}</td>
+                <td>
+                  <button class="text-button" (click)="editarContrato(c)" [disabled]="ocupado()">
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            }
+          } @else {
+            @for (e of empleados(); track e.id) {
+              <tr>
+                <td>
+                  <strong>{{ e.codigo }} · {{ e.nombre }}</strong
+                  ><br />{{ e.documento }}
+                </td>
+                <td>{{ e.cargo }}</td>
+                <td>{{ e.activo ? 'Activo' : 'Inactivo' }}</td>
+                <td>
+                  <button class="text-button" (click)="editarEmpleado(e)" [disabled]="ocupado()">
+                    Editar
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+          @if (total() === 0) {
+            <tr>
+              <td colspan="4">{{ ocupado() ? 'Consultando…' : 'No hay registros.' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span>{{ total() }} registros · Página {{ pagina() + 1 }}</span
+      ><button
+        class="button secondary small"
+        (click)="cambiarPagina(pagina() - 1)"
+        [disabled]="ocupado() || pagina() === 0"
+      >
+        Anterior</button
+      ><button
+        class="button secondary small"
+        (click)="cambiarPagina(pagina() + 1)"
+        [disabled]="ocupado() || (pagina() + 1) * 25 >= total()"
+      >
+        Siguiente
+      </button>
+    </div>
+  </section>
+  <section class="panel billing-form">
+    <h3>
+      {{
+        esContratos
+          ? contratoEditado
+            ? 'Editar contrato'
+            : 'Nuevo contrato'
+          : empleadoEditado
+            ? 'Editar empleado'
+            : 'Nuevo empleado'
+      }}
+    </h3>
+    <div class="billing-search">
+      <label for="opcion-busqueda">{{ esContratos ? 'Buscar empleado' : 'Buscar tercero' }}</label
+      ><input id="opcion-busqueda" [(ngModel)]="busquedaOpcion" maxlength="100" /><button
+        type="button"
+        class="button secondary"
+        (click)="buscarOpciones()"
+        [disabled]="ocupado()"
+      >
+        Buscar
+      </button>
+    </div>
+    <p class="field-help">
+      {{
+        esContratos
+          ? 'Hasta 100 empleados por búsqueda.'
+          : 'Hasta 25 terceros por búsqueda; utiliza la identificación para precisar.'
+      }}
+    </p>
+    @if (esContratos) {
+      <form #formContrato="ngForm" (ngSubmit)="guardarContrato()">
+        <fieldset [disabled]="ocupado()">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="contrato-empleado">Empleado *</label
+              ><select
+                id="contrato-empleado"
+                name="empleado"
+                [(ngModel)]="contrato.empleadoId"
+                [disabled]="!!contratoEditado"
+                required
+              >
+                <option value="">Selecciona empleado</option>
+                @for (e of opciones(); track e.id) {
+                  <option [value]="e.id">{{ e.codigo }} · {{ e.nombre }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label for="contrato-tipo">Tipo *</label
+              ><select id="contrato-tipo" name="tipo" [(ngModel)]="contrato.tipo">
+                <option value="INDEFINIDO">Indefinido</option>
+                <option value="FIJO">Término fijo</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="contrato-salario">Salario mensual ordinario *</label
+              ><input
+                id="contrato-salario"
+                name="salario"
+                [(ngModel)]="contrato.salarioMensual"
+                required
+                inputmode="decimal"
+              />
+            </div>
+            <div class="field">
+              <label for="contrato-inicio">Inicio *</label
+              ><input
+                type="date"
+                id="contrato-inicio"
+                name="inicio"
+                [(ngModel)]="contrato.inicio"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="contrato-fin">Fin {{ contrato.tipo === 'FIJO' ? '*' : '' }}</label
+              ><input
+                type="date"
+                id="contrato-fin"
+                name="fin"
+                [(ngModel)]="contrato.fin"
+                [min]="contrato.inicio"
+                [required]="contrato.tipo === 'FIJO'"
+              />
+            </div>
+            <label class="checkbox-field full"
+              ><input type="checkbox" name="auxilio" [(ngModel)]="contrato.auxilioTransporte" />
+              Corresponde auxilio de transporte presencial, sujeto a tope salarial</label
+            >
+          </div>
+          <p class="field-help">
+            Esta etapa no liquida salario integral, trabajo parcial, teletrabajo/conectividad ni
+            meses incompletos. El tipo de contrato registrado no valida sus cláusulas o duración
+            legal.
+          </p>
+          <button class="button primary" [disabled]="ocupado() || formContrato.invalid">
+            Guardar contrato
+          </button>
+        </fieldset>
+      </form>
+    } @else {
+      <form #formEmpleado="ngForm" (ngSubmit)="guardarEmpleado()">
+        <fieldset [disabled]="ocupado()">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="empleado-tercero">Persona del catálogo de terceros *</label>
+              @if (empleadoEditado) {
+                <input
+                  id="empleado-tercero"
+                  [value]="empleadoEditado.nombre + ' · ' + empleadoEditado.documento"
+                  disabled
+                />
+              } @else {
+                <select
+                  id="empleado-tercero"
+                  name="tercero"
+                  [(ngModel)]="empleado.terceroId"
+                  required
+                >
+                  <option value="">Selecciona persona</option>
+                  @for (t of terceros(); track t.id) {
+                    <option [value]="t.id">{{ t.documentNumber }} · {{ t.name }}</option>
+                  }
+                </select>
+              }
+            </div>
+            <div class="field">
+              <label for="empleado-codigo">Código interno *</label
+              ><input
+                id="empleado-codigo"
+                name="codigo"
+                [(ngModel)]="empleado.codigo"
+                maxlength="30"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="empleado-cargo">Cargo *</label
+              ><input
+                id="empleado-cargo"
+                name="cargo"
+                [(ngModel)]="empleado.cargo"
+                maxlength="150"
+                required
+              />
+            </div>
+            <label class="checkbox-field full"
+              ><input type="checkbox" name="activo" [(ngModel)]="empleado.activo" /> Empleado
+              activo</label
+            >
+          </div>
+          <button class="button primary" [disabled]="ocupado() || formEmpleado.invalid">
+            Guardar empleado
+          </button>
+        </fieldset>
+      </form>
+      <p class="field-help">
+        ¿Falta la persona?
+        <a [routerLink]="['/empresas', contexto.company()!.id, 'contabilidad', 'terceros']"
+          >Crear tercero</a
+        >. Usa CC, CE o pasaporte; no NIT. La identificación del empleado no se cambia desde este
+        formulario.
+      </p>
+    }
+  </section>
+</div>

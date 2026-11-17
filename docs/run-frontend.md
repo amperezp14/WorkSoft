@@ -23,6 +23,9 @@ Terceros y Comprobantes incluyen formularios conectados a PostgreSQL. Consultar
 [la guía del módulo](run-third-parties-journals.md). Facturación incluye ventas internas, productos y servicios, notas, recaudos, cartera
 y configuración: [guía de uso](run-facturacion.md). La emisión DIAN sigue pendiente.
 
+Nómina incorpora empleados, contratos, parámetros y liquidaciones mensuales internas:
+[guía y alcance](run-nomina.md).
+
 npm test ejecuta las pruebas unitarias; npm run build genera los archivos estáticos.
 Las pruebas de navegador necesitan la API y una BD de pruebas; no usan mocks de
 persistencia. Para desplegar el frontend compilado no hace falta Node.js en el

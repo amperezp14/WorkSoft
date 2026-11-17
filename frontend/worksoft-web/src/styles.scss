@@ -2197,3 +2197,18 @@ dd {
     min-width: 110px;
   }
 }
+
+.payroll-print {
+  break-after: page;
+}
+.payroll-print:last-child {
+  break-after: auto;
+}
+.billing-form td input[type='number'] {
+  max-width: 90px;
+}
+@media print {
+  .payroll-print {
+    break-inside: avoid-page;
+  }
+}

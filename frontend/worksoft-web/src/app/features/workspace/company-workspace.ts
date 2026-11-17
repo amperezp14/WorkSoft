@@ -54,6 +54,12 @@ import { CompanyContext } from './company-context';
           >Facturación</a
         >
         <a
+          [routerLink]="['/empresas', company.id, 'nomina']"
+          routerLinkActive="selected"
+          ariaCurrentWhenActive="page"
+          >Nómina</a
+        >
+        <a
           [routerLink]="['/empresas', company.id, 'informacion']"
           routerLinkActive="selected"
           ariaCurrentWhenActive="page"

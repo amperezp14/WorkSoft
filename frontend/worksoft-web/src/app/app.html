@@ -47,6 +47,12 @@
               routerLinkActive="active"
               ><app-icon name="invoice" /> Facturación</a
             >
+            <a
+              class="nav-item"
+              [routerLink]="['/empresas', selected.id, 'nomina']"
+              routerLinkActive="active"
+              ><app-icon name="people" /> Nómina</a
+            >
           </nav>
         </div>
       }

@@ -7,6 +7,24 @@ export function apiErrorMessage(error: unknown): string {
   if (error.status === 0)
     return 'No hay conexión con el servidor. Comprueba tu conexión y vuelve a intentarlo.';
   switch (error.error?.code) {
+    case 'NOMINA_NO_ENCONTRADA':
+      return 'El registro de nómina no está disponible en esta empresa.';
+    case 'NOMINA_REFERENCIA_INVALIDA':
+      return 'Revisa que el tercero y empleado estén activos, sean de esta empresa y que cada participante tenga un solo contrato seleccionado.';
+    case 'NOMINA_CASO_NO_SOPORTADO':
+      return 'Solo se liquida contratación ordinaria a jornada completa, que cubra el mes completo y con salario mensual no inferior al mínimo de la vigencia.';
+    case 'NOMINA_PARAMETROS_INVALIDOS':
+      return 'Guarda una vigencia revisada que cubra todo el mes antes de liquidar.';
+    case 'NOMINA_DEDUCCIONES_INVALIDAS':
+      return 'Las deducciones superan el devengado. Revisa las novedades.';
+    case 'NOMINA_PERIODO_CERRADO':
+      return 'El estado del periodo no permite esta operación. Las nóminas pagadas y anuladas quedan cerradas.';
+    case 'NOMINA_RECALCULAR':
+      return 'Los datos cambiaron o falta calcular. Recalcula la nómina antes de aprobar.';
+    case 'NOMINA_REGISTRO_DUPLICADO':
+      return 'Ya existe el empleado, código o periodo mensual. Anula el periodo anterior si necesitas reemplazarlo.';
+    case 'NOMINA_SUPERPOSICION':
+      return 'Las fechas se superponen con otro contrato del empleado o con otra vigencia de parámetros.';
     case 'FACTURACION_NO_ENCONTRADA':
       return 'El registro de facturación no está disponible en esta empresa.';
     case 'PRODUCTO_DUPLICADO':

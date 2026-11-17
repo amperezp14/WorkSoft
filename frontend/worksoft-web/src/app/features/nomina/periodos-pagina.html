@@ -1,0 +1,636 @@
+<app-navegacion-nomina />
+<div class="no-print">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">NÓMINA · MES COMPLETO</span>
+      <h2>Liquidaciones y novedades</h2>
+      <p>Calcula, revisa y aprueba la nómina ordinaria mensual.</p>
+    </div>
+    <button class="button primary" (click)="nuevo()" [disabled]="ocupado()">Nuevo periodo</button>
+  </div>
+  <div class="alert billing-notice">
+    Documento interno. No liquida PILA, aportes patronales, prestaciones, incapacidades o meses
+    incompletos y no emite nómina electrónica DIAN.
+    <a [routerLink]="['/empresas', contexto.company()!.id, 'nomina', 'parametros']"
+      >Revisar parámetros</a
+    >.
+  </div>
+  @if (error()) {
+    <div class="alert error" role="alert">{{ error() }}</div>
+  }
+  @if (mensaje()) {
+    <div class="alert success" role="status">{{ mensaje() }}</div>
+  }
+  <section class="panel">
+    <form class="account-search" (ngSubmit)="buscar()">
+      <label class="sr-only" for="periodo-busqueda">Buscar periodo</label
+      ><input
+        id="periodo-busqueda"
+        name="busqueda"
+        [(ngModel)]="busqueda"
+        maxlength="100"
+        placeholder="Mes (2026-11) o descripción"
+      /><button class="button secondary" [disabled]="ocupado()">Buscar</button>
+    </form>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Periodo</th>
+            <th>Estado</th>
+            <th>Empleados</th>
+            <th>Neto COP</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of registros(); track p.id) {
+            <tr>
+              <td>
+                <strong>{{ p.anio }}-{{ p.mes.toString().padStart(2, '0') }}</strong
+                ><br />{{ p.descripcion }}
+              </td>
+              <td>{{ p.estado }}</td>
+              <td>{{ p.totales.empleados }}</td>
+              <td>{{ importe(p.totales.neto) }}</td>
+              <td>
+                <button class="text-button" (click)="abrir(p.id)" [disabled]="ocupado()">
+                  Abrir
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">{{ ocupado() ? 'Consultando…' : 'No hay periodos.' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span>{{ total() }} periodos · Página {{ pagina() + 1 }}</span
+      ><button
+        class="button secondary small"
+        (click)="cambiarPagina(pagina() - 1)"
+        [disabled]="ocupado() || pagina() === 0"
+      >
+        Anterior</button
+      ><button
+        class="button secondary small"
+        (click)="cambiarPagina(pagina() + 1)"
+        [disabled]="ocupado() || (pagina() + 1) * 25 >= total()"
+      >
+        Siguiente
+      </button>
+    </div>
+  </section>
+  @if (!detalle()) {
+    <section class="panel billing-form">
+      <h3>Crear periodo mensual</h3>
+      <form #formPeriodo="ngForm" (ngSubmit)="crear()" (input)="modificado = true">
+        <fieldset [disabled]="ocupado()">
+          <div class="form-grid">
+            <div class="field">
+              <label for="periodo-anio">Año *</label
+              ><input
+                id="periodo-anio"
+                name="anio"
+                type="number"
+                [(ngModel)]="formulario.anio"
+                min="1900"
+                max="9999"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="periodo-mes">Mes *</label
+              ><input
+                id="periodo-mes"
+                name="mes"
+                type="number"
+                [(ngModel)]="formulario.mes"
+                min="1"
+                max="12"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="periodo-descripcion">Descripción *</label
+              ><input
+                id="periodo-descripcion"
+                name="descripcion"
+                [(ngModel)]="formulario.descripcion"
+                maxlength="200"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="periodo-autor">Elaborado por *</label
+              ><input
+                id="periodo-autor"
+                name="autor"
+                [(ngModel)]="formulario.elaboradoPor"
+                maxlength="100"
+                required
+              />
+            </div>
+          </div>
+          <p class="field-help">
+            Selecciona hasta 100 contratos. Cada uno debe cubrir el mes completo y pertenecer a un
+            empleado diferente. La selección se conserva al cambiar de página; el encabezado y
+            participantes quedan fijos al crear el periodo.
+          </p>
+        </fieldset>
+        <div class="billing-search">
+          <label for="seleccion-busqueda">Buscar contratos por empleado</label
+          ><input
+            id="seleccion-busqueda"
+            name="busquedaContrato"
+            [(ngModel)]="busquedaContrato"
+            maxlength="100"
+          /><button
+            type="button"
+            class="button secondary"
+            (click)="buscarContratos()"
+            [disabled]="ocupado()"
+          >
+            Buscar
+          </button>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Seleccionar</th>
+                <th>Empleado / vigencia</th>
+                <th>Salario</th>
+                <th>Días auxilio (0–30)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of contratos(); track c.id) {
+                <tr>
+                  <td>
+                    <input
+                      type="checkbox"
+                      [attr.aria-label]="'Seleccionar ' + c.empleadoNombre"
+                      [checked]="seleccionados.has(c.id)"
+                      (change)="seleccionar(c, $any($event.target).checked)"
+                      [disabled]="
+                        ocupado() || (!seleccionados.has(c.id) && seleccionados.size >= 100)
+                      "
+                    />
+                  </td>
+                  <td>{{ c.empleadoNombre }}<br />{{ c.inicio }} — {{ c.fin || 'Indefinido' }}</td>
+                  <td>{{ importe(c.salarioMensual) }}</td>
+                  <td>
+                    @if (seleccionados.get(c.id); as seleccionado) {
+                      <input
+                        type="number"
+                        min="0"
+                        max="30"
+                        [attr.aria-label]="'Días auxilio de ' + c.empleadoNombre"
+                        [value]="seleccionado.diasAuxilio"
+                        (input)="cambiarDias(c.id, $any($event.target).value)"
+                        [disabled]="ocupado() || !c.auxilioTransporte"
+                      />
+                    } @else {
+                      —
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4">No hay contratos. Regístralos antes de crear el periodo.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span
+            >{{ seleccionados.size }} seleccionados · Contratos página
+            {{ paginaContratos() + 1 }}</span
+          ><button
+            type="button"
+            class="button secondary small"
+            (click)="cambiarPaginaContratos(paginaContratos() - 1)"
+            [disabled]="ocupado() || paginaContratos() === 0"
+          >
+            Anterior</button
+          ><button
+            type="button"
+            class="button secondary small"
+            (click)="cambiarPaginaContratos(paginaContratos() + 1)"
+            [disabled]="ocupado() || (paginaContratos() + 1) * 25 >= totalContratos()"
+          >
+            Siguiente
+          </button>
+        </div>
+        @if (seleccionados.size) {
+          <p class="field-help">
+            Seleccionados:
+            @for (s of seleccion; track s.contrato.id) {
+              <span>{{ s.contrato.empleadoNombre }} ({{ s.diasAuxilio }} días auxilio) · </span>
+            }
+          </p>
+        }
+        <button
+          class="button primary"
+          [disabled]="ocupado() || formPeriodo.invalid || seleccionados.size === 0"
+        >
+          Guardar periodo
+        </button>
+      </form>
+    </section>
+  }
+  @if (detalle(); as d) {
+    <section class="panel billing-form">
+      <div class="panel-toolbar">
+        <div>
+          <h3>
+            {{ d.periodo.anio }}-{{ d.periodo.mes.toString().padStart(2, '0') }} ·
+            {{ d.periodo.descripcion }}
+          </h3>
+          <p>{{ d.periodo.estado }} · Elaborado por {{ d.periodo.elaboradoPor }}</p>
+        </div>
+        @if (d.periodo.liquidaciones.length) {
+          <button class="button secondary" (click)="imprimir()" [disabled]="ocupado()">
+            Desprendibles / PDF
+          </button>
+        }
+      </div>
+      <p class="field-help">
+        Participantes:
+        @for (c of d.contratosSeleccionados; track c.id) {
+          <span>{{ c.empleadoNombre }} · </span>
+        }
+      </p>
+      @if (d.periodo.estado === 'ANULADA') {
+        <div class="alert billing-notice">Anulada: {{ d.periodo.motivoAnulacion }}</div>
+      }
+      @if (d.periodo.estado === 'PAGADA') {
+        <div class="alert success">
+          Pago externo declarado el {{ d.periodo.fechaPago }} · {{ d.periodo.referenciaPago }}. No
+          se ejecutó transferencia.
+        </div>
+      }
+      @if (editable) {
+        <div class="billing-actions">
+          <button class="button primary" (click)="calcular()" [disabled]="ocupado() || modificado">
+            Calcular / recalcular</button
+          ><button
+            class="button secondary"
+            (click)="aprobar()"
+            [disabled]="ocupado() || modificado || d.periodo.estado !== 'CALCULADA'"
+          >
+            Aprobar liquidación
+          </button>
+        </div>
+        <p class="field-help">
+          Los cambios en novedades invalidan el cálculo. Si cambian contratos, personas o
+          parámetros, recalcula antes de aprobar.
+        </p>
+      }
+      <div class="billing-summary">
+        <section class="panel">
+          <span>Devengado</span><strong>{{ importe(d.totales.devengado) }}</strong>
+        </section>
+        <section class="panel">
+          <span>Deducciones</span><strong>{{ importe(d.totales.deducciones) }}</strong>
+        </section>
+        <section class="panel">
+          <span>Neto a pagar · {{ d.totales.empleados }} empleados</span
+          ><strong>{{ importe(d.totales.neto) }}</strong>
+        </section>
+      </div>
+      @if (d.periodo.parametros; as parametros) {
+        <p class="field-help">
+          Vigencia {{ parametros.desde }} — {{ parametros.hasta }} · Revisión declarada por
+          {{ parametros.responsableRevision }} · Estrategia {{ parametros.estrategia }}
+        </p>
+      }
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Empleado</th>
+              <th>Salario</th>
+              <th>Adicional salarial</th>
+              <th>Auxilio</th>
+              <th>IBC</th>
+              <th>Salud / pensión</th>
+              <th>Solidaridad</th>
+              <th>Otras / retención</th>
+              <th>Neto</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of d.periodo.liquidaciones; track l.empleadoId) {
+              <tr>
+                <td>{{ l.codigo }} · {{ l.nombre }}</td>
+                <td>{{ importe(l.salario) }}</td>
+                <td>{{ importe(l.adicionalSalarial) }}</td>
+                <td>{{ importe(l.auxilio) }}</td>
+                <td>{{ importe(l.ibc) }}</td>
+                <td>{{ importe(l.salud) }}<br />{{ importe(l.pension) }}</td>
+                <td>{{ importe(l.solidaridad) }} ({{ l.tasaSolidaridad }}%)</td>
+                <td>{{ importe(l.otrasDeducciones) }}<br />{{ importe(l.retencion) }}</td>
+                <td>
+                  <strong>{{ importe(l.neto) }}</strong>
+                </td>
+                <td>
+                  <button
+                    class="text-button"
+                    (click)="imprimir(l.empleadoId)"
+                    [disabled]="ocupado()"
+                  >
+                    Desprendible
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="10">Agrega las novedades y calcula el periodo.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel billing-form">
+      <h3>Novedades del periodo</h3>
+      @if (editable) {
+        <form
+          #formNovedad="ngForm"
+          (ngSubmit)="agregarNovedad()"
+          (input)="modificado = true"
+          (change)="modificado = true"
+        >
+          <fieldset [disabled]="ocupado()">
+            <div class="form-grid">
+              <div class="field">
+                <label for="novedad-empleado">Empleado *</label
+                ><select
+                  id="novedad-empleado"
+                  name="empleado"
+                  [(ngModel)]="novedad.empleadoId"
+                  required
+                >
+                  <option value="">Selecciona empleado</option>
+                  @for (c of d.contratosSeleccionados; track c.empleadoId) {
+                    <option [value]="c.empleadoId">{{ c.empleadoNombre }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="novedad-tipo">Tipo *</label
+                ><select id="novedad-tipo" name="tipo" [(ngModel)]="novedad.tipo">
+                  @for (t of tipos; track t.valor) {
+                    <option [value]="t.valor">{{ t.nombre }}</option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label for="novedad-descripcion">Descripción *</label
+                ><input
+                  id="novedad-descripcion"
+                  name="descripcion"
+                  [(ngModel)]="novedad.descripcion"
+                  maxlength="200"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="novedad-importe">Importe COP *</label
+                ><input
+                  id="novedad-importe"
+                  name="importe"
+                  [(ngModel)]="novedad.importe"
+                  inputmode="decimal"
+                  required
+                />
+              </div>
+              <div class="field full">
+                <label for="novedad-soporte">Referencia de soporte / autorización *</label
+                ><input
+                  id="novedad-soporte"
+                  name="soporte"
+                  [(ngModel)]="novedad.soporte"
+                  maxlength="500"
+                  required
+                />
+              </div>
+            </div>
+            <p class="field-help">
+              Las bonificaciones y comisiones ingresan completas al salario e IBC. Las deducciones y
+              la retención deben estar calculadas y legalmente documentadas; no se valida
+              automáticamente su procedencia ni se adjuntan soportes.
+            </p>
+            <button class="button primary" [disabled]="ocupado() || formNovedad.invalid">
+              Agregar novedad
+            </button>
+          </fieldset>
+        </form>
+      }
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Empleado</th>
+              <th>Novedad</th>
+              <th>Importe</th>
+              <th>Soporte</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (n of d.periodo.novedades; track n.id) {
+              <tr>
+                <td>{{ nombreEmpleado(n.empleadoId) }}</td>
+                <td>{{ nombreTipo(n.tipo) }}<br />{{ n.descripcion }}</td>
+                <td>{{ importe(n.importe) }}</td>
+                <td>{{ n.soporte }}</td>
+                <td>
+                  @if (editable) {
+                    <button class="text-button" (click)="quitarNovedad(n)" [disabled]="ocupado()">
+                      Quitar
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5">No se han registrado novedades.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    @if (d.periodo.estado === 'APROBADA') {
+      <section class="panel billing-form">
+        <h3>Registrar pago externo de la nómina</h3>
+        <p class="field-help">
+          Declaración del pago completo a todos los empleados. No conecta bancos ni registra pagos
+          parciales.
+        </p>
+        <form #formPago="ngForm" (ngSubmit)="registrarPago()">
+          <fieldset [disabled]="ocupado()">
+            <div class="form-grid">
+              <div class="field">
+                <label for="nomina-fecha-pago">Fecha del pago *</label
+                ><input
+                  type="date"
+                  id="nomina-fecha-pago"
+                  name="fecha"
+                  [(ngModel)]="pago.fecha"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="nomina-ref-pago">Referencia / soporte *</label
+                ><input
+                  id="nomina-ref-pago"
+                  name="referencia"
+                  [(ngModel)]="pago.referencia"
+                  maxlength="300"
+                  required
+                />
+              </div>
+            </div>
+            <button class="button primary" [disabled]="ocupado() || formPago.invalid">
+              Registrar como pagada
+            </button>
+          </fieldset>
+        </form>
+      </section>
+    }
+    @if (d.periodo.estado !== 'PAGADA' && d.periodo.estado !== 'ANULADA') {
+      <section class="panel billing-form">
+        <h3>Anular periodo</h3>
+        <form #formAnular="ngForm" (ngSubmit)="anular()">
+          <fieldset [disabled]="ocupado()">
+            <div class="field">
+              <label for="nomina-motivo">Motivo *</label
+              ><textarea
+                id="nomina-motivo"
+                name="motivo"
+                [(ngModel)]="motivoAnulacion"
+                maxlength="1000"
+                rows="2"
+                required
+              ></textarea>
+            </div>
+            <button class="button secondary" [disabled]="ocupado() || formAnular.invalid">
+              Anular y conservar historial
+            </button>
+          </fieldset>
+        </form>
+      </section>
+    }
+  }
+</div>
+@if (detalle(); as d) {
+  @for (l of d.periodo.liquidaciones; track l.empleadoId) {
+    @if (!empleadoImpresion || empleadoImpresion === l.empleadoId) {
+      <article class="voucher-print payroll-print">
+        <header>
+          <h1>{{ d.periodo.emisor.nombre }}</h1>
+          <p>NIT {{ d.periodo.emisor.nit }}-{{ d.periodo.emisor.digitoVerificacion }}</p>
+          <h2>
+            Desprendible interno de nómina · {{ d.periodo.anio }}-{{
+              d.periodo.mes.toString().padStart(2, '0')
+            }}
+          </h2>
+          <p>Estado {{ d.periodo.estado }} · COP · Mes completo, 30 días de salario</p>
+          <p>Sin validación DIAN; no es planilla PILA ni comprobante de transferencia bancaria.</p>
+        </header>
+        <p>
+          <strong>{{ l.codigo }} · {{ l.nombre }}</strong> · {{ l.tipoDocumento }} {{ l.documento }}
+        </p>
+        <p>
+          Cargo {{ l.cargo }} · Contrato {{ l.contrato.tipo }} · {{ l.contrato.inicio }} —
+          {{ l.contrato.fin || 'Indefinido' }}
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Concepto</th>
+              <th>Devengado COP</th>
+              <th>Deducción COP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Salario ordinario mensual</td>
+              <td>{{ importe(l.salario) }}</td>
+              <td></td>
+            </tr>
+            @for (n of l.novedades; track n.id) {
+              <tr>
+                <td>{{ nombreTipo(n.tipo) }} · {{ n.descripcion }}</td>
+                <td>
+                  {{
+                    n.tipo === 'BONIFICACION_SALARIAL' || n.tipo === 'COMISION_SALARIAL'
+                      ? importe(n.importe)
+                      : ''
+                  }}
+                </td>
+                <td>
+                  {{
+                    n.tipo === 'DEDUCCION_AUTORIZADA' || n.tipo === 'RETENCION_FUENTE'
+                      ? importe(n.importe)
+                      : ''
+                  }}
+                </td>
+              </tr>
+            }
+            <tr>
+              <td>Auxilio transporte ({{ l.diasAuxilio }} días declarados; sujeto a tope)</td>
+              <td>{{ importe(l.auxilio) }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Salud trabajador</td>
+              <td></td>
+              <td>{{ importe(l.salud) }}</td>
+            </tr>
+            <tr>
+              <td>Pensión trabajador</td>
+              <td></td>
+              <td>{{ importe(l.pension) }}</td>
+            </tr>
+            <tr>
+              <td>Solidaridad pensional {{ l.tasaSolidaridad }}%</td>
+              <td></td>
+              <td>{{ importe(l.solidaridad) }}</td>
+            </tr>
+            <tr>
+              <td><strong>Totales</strong></td>
+              <td>{{ importe(l.devengado) }}</td>
+              <td>{{ importe(l.deducciones) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <h2>Neto a pagar: {{ importe(l.neto) }}</h2>
+        <p>
+          IBC: {{ importe(l.ibc) }} · Parámetros {{ d.periodo.parametros?.desde }} —
+          {{ d.periodo.parametros?.hasta }}
+        </p>
+        <p>Fuentes: {{ d.periodo.parametros?.fuente }}</p>
+        <p>
+          Elaborado por {{ d.periodo.elaboradoPor }} · Revisión declarada por
+          {{ d.periodo.parametros?.responsableRevision }}. Sin firma autenticada.
+        </p>
+        @if (d.periodo.estado === 'PAGADA') {
+          <p>Pago externo declarado: {{ d.periodo.fechaPago }} · {{ d.periodo.referenciaPago }}</p>
+        }
+        @if (d.periodo.estado === 'ANULADA') {
+          <p><strong>ANULADA:</strong> {{ d.periodo.motivoAnulacion }}</p>
+        }
+      </article>
+    }
+  }
+}

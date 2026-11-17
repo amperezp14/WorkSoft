@@ -41,6 +41,7 @@ La referencia es parcial, basada en el PUC para comerciantes del Decreto 2650 de
 1993 y revisada para este desarrollo en 2026; no representa un PUC oficial nuevo
 ni sustituye la definición del catálogo propio según el marco contable aplicable.
 
+- [Nómina: empleados, contratos y liquidación mensual](docs/run-nomina.md)
 - [Facturación: ventas, conceptos, notas, recaudos y cartera](docs/run-facturacion.md)
 - [Terceros y comprobantes: formularios, contabilización y PDF](docs/run-third-parties-journals.md)
 - [Conexión y uso del plan de cuentas](docs/run-postgres-accounting.md)

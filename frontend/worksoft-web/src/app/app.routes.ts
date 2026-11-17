@@ -91,6 +91,33 @@ export const routes: Routes = [
       },
       { path: 'facturacion', loadComponent: modulePage, data: { module: 'facturacion' } },
       { path: 'facturacion/:section', loadComponent: modulePage, data: { module: 'facturacion' } },
+      { path: 'nomina', redirectTo: 'nomina/periodos', pathMatch: 'full' },
+      {
+        path: 'nomina/empleados',
+        data: { contratos: false },
+        loadComponent: () =>
+          import('./features/nomina/personal-pagina').then((m) => m.PersonalPagina),
+      },
+      {
+        path: 'nomina/contratos',
+        data: { contratos: true },
+        loadComponent: () =>
+          import('./features/nomina/personal-pagina').then((m) => m.PersonalPagina),
+      },
+      {
+        path: 'nomina/parametros',
+        loadComponent: () =>
+          import('./features/nomina/parametros-pagina').then((m) => m.ParametrosPagina),
+      },
+      {
+        path: 'nomina/periodos',
+        canDeactivate: [
+          (componente: import('./features/nomina/periodos-pagina').PeriodosPagina) =>
+            componente.canLeave(),
+        ],
+        loadComponent: () =>
+          import('./features/nomina/periodos-pagina').then((m) => m.PeriodosPagina),
+      },
       { path: '**', redirectTo: '' },
     ],
   },

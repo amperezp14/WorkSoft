@@ -23,6 +23,10 @@ import { Component, input } from '@angular/core';
       @case ('invoice') {
         <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3ZM9 7h6m-6 4h6m-6 4h3" />
       }
+      @case ('people') {
+        <circle cx="9" cy="7" r="3" />
+        <path d="M3 21v-3a6 6 0 0 1 12 0v3m1-17a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v3" />
+      }
       @case ('plus') {
         <path d="M12 5v14M5 12h14" />
       }
