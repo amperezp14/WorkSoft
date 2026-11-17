@@ -1,7 +1,14 @@
+@if (clientesFacturacion) {
+  <app-navegacion-facturacion />
+  <p class="alert billing-notice">
+    Registra clientes con categoría Cliente o Cliente y proveedor. Este catálogo se comparte con
+    Contabilidad y también muestra otros terceros de la empresa.
+  </p>
+}
 <div class="page-heading">
   <div>
     <span class="eyebrow">CONTABILIDAD</span>
-    <h2>Terceros</h2>
+    <h2>{{ clientesFacturacion ? 'Clientes y terceros' : 'Terceros' }}</h2>
     <p>Identificación y contacto de las personas y empresas relacionadas.</p>
   </div>
   <button class="button primary" (click)="newParty()">Nuevo tercero</button>

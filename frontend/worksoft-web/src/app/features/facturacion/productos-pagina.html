@@ -1,0 +1,164 @@
+<app-navegacion-facturacion />
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">FACTURACIÓN · COP</span>
+    <h2>Productos y servicios</h2>
+    <p>Define tus conceptos de venta y su tratamiento de IVA.</p>
+  </div>
+  <button class="button primary" (click)="nuevo()" [disabled]="ocupado()">Nuevo concepto</button>
+</div>
+@if (error()) {
+  <div class="alert error" role="alert">{{ error() }}</div>
+}
+@if (mensaje()) {
+  <div class="alert success" role="status">{{ mensaje() }}</div>
+}
+<div class="accounts-layout">
+  <section class="panel">
+    <form class="account-search" (ngSubmit)="buscar()">
+      <label class="sr-only" for="buscar-producto">Buscar concepto</label
+      ><input
+        id="buscar-producto"
+        name="busqueda"
+        [(ngModel)]="busqueda"
+        maxlength="100"
+        placeholder="Código o nombre"
+      /><button class="button secondary" [disabled]="ocupado()">Buscar</button>
+    </form>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Precio</th>
+            <th>IVA</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (producto of productos(); track producto.id) {
+            <tr>
+              <td>
+                <strong>{{ producto.codigo }} · {{ producto.nombre }}</strong
+                ><br />{{ producto.tipo }} · {{ producto.activo ? 'Activo' : 'Inactivo' }}
+              </td>
+              <td>{{ importe(producto.precio) }}</td>
+              <td>{{ producto.tratamientoIva }} {{ producto.tarifaIva }}%</td>
+              <td>
+                <button class="text-button" (click)="editar(producto)" [disabled]="ocupado()">
+                  Editar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4">{{ ocupado() ? 'Cargando…' : 'No hay conceptos registrados.' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span>{{ total() }} conceptos · Página {{ pagina() + 1 }}</span
+      ><button
+        class="button secondary small"
+        (click)="cargar(pagina() - 1)"
+        [disabled]="ocupado() || pagina() === 0"
+      >
+        Anterior</button
+      ><button
+        class="button secondary small"
+        (click)="cargar(pagina() + 1)"
+        [disabled]="ocupado() || (pagina() + 1) * 25 >= total()"
+      >
+        Siguiente
+      </button>
+    </div>
+  </section>
+  <section class="panel billing-form">
+    <h3>{{ editado() ? 'Editar concepto' : 'Nuevo concepto' }}</h3>
+    <form #formulario="ngForm" (ngSubmit)="guardar()">
+      <fieldset [disabled]="ocupado()">
+        <div class="form-grid">
+          <div class="field">
+            <label for="codigo">Código *</label
+            ><input
+              id="codigo"
+              name="codigo"
+              [(ngModel)]="valores.codigo"
+              required
+              maxlength="40"
+            />
+          </div>
+          <div class="field">
+            <label for="tipo-producto">Tipo *</label
+            ><select id="tipo-producto" name="tipo" [(ngModel)]="valores.tipo">
+              <option value="PRODUCTO">Producto</option>
+              <option value="SERVICIO">Servicio</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="nombre-producto">Nombre *</label
+            ><input
+              id="nombre-producto"
+              name="nombre"
+              [(ngModel)]="valores.nombre"
+              required
+              maxlength="200"
+            />
+          </div>
+          <div class="field">
+            <label for="unidad">Unidad *</label
+            ><input
+              id="unidad"
+              name="unidad"
+              [(ngModel)]="valores.unidad"
+              required
+              maxlength="30"
+            />
+          </div>
+          <div class="field">
+            <label for="precio">Precio antes de impuestos *</label
+            ><input
+              id="precio"
+              name="precio"
+              [(ngModel)]="valores.precio"
+              required
+              inputmode="decimal"
+            />
+          </div>
+          <div class="field">
+            <label for="tratamiento">Tratamiento IVA *</label
+            ><select id="tratamiento" name="tratamiento" [(ngModel)]="valores.tratamientoIva">
+              <option value="GRAVADO">Gravado</option>
+              <option value="EXENTO">Exento</option>
+              <option value="EXCLUIDO">Excluido</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="tarifa">Tarifa IVA % *</label
+            ><input
+              id="tarifa"
+              name="tarifa"
+              [(ngModel)]="valores.tarifaIva"
+              [disabled]="valores.tratamientoIva !== 'GRAVADO'"
+              required
+              inputmode="decimal"
+            />
+          </div>
+          <label class="check-field full"
+            ><input type="checkbox" name="activo" [(ngModel)]="valores.activo" /> Activo para nuevas
+            ventas</label
+          >
+        </div>
+        <p class="field-help">
+          Selecciona el tratamiento aplicable al concepto y a tu empresa. No se determina
+          automáticamente la clasificación tributaria.
+        </p>
+        <button class="button primary" [disabled]="formulario.invalid || ocupado()">
+          Guardar concepto
+        </button>
+      </fieldset>
+    </form>
+  </section>
+</div>

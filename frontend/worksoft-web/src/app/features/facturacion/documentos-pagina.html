@@ -1,0 +1,655 @@
+<app-navegacion-facturacion />
+<div class="no-print">
+  <div class="page-heading">
+    <div>
+      <span class="eyebrow">FACTURACIÓN · COP</span>
+      <h2>{{ notas ? 'Notas de venta' : 'Documentos de venta' }}</h2>
+      <p>Prepara documentos, registra recaudos y conserva el historial comercial.</p>
+    </div>
+    <button class="button primary" (click)="nuevo()" [disabled]="ocupado()">Nueva venta</button>
+  </div>
+  <div class="alert billing-notice">
+    Documentos internos: no constituyen facturas electrónicas ni notas validadas por la DIAN.
+  </div>
+  @if (error()) {
+    <div class="alert error" role="alert">{{ error() }}</div>
+  }
+  @if (mensaje()) {
+    <div class="alert success" role="status">{{ mensaje() }}</div>
+  }
+  <section class="panel">
+    <form class="billing-filters" (ngSubmit)="buscar()">
+      <div class="field">
+        <label for="buscar-venta">Buscar</label
+        ><input
+          id="buscar-venta"
+          name="q"
+          [(ngModel)]="filtros.q"
+          maxlength="100"
+          placeholder="Cliente o número"
+        />
+      </div>
+      <div class="field">
+        <label for="tipo-filtro">Documento</label
+        ><select id="tipo-filtro" name="tipoFiltro" [(ngModel)]="filtros.tipo">
+          <option value="">Todos</option>
+          <option value="FACTURA">Ventas</option>
+          <option value="NOTA_CREDITO">Notas crédito</option>
+          <option value="NOTA_DEBITO">Notas débito</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="estado-filtro">Estado</label
+        ><select id="estado-filtro" name="estadoFiltro" [(ngModel)]="filtros.estado">
+          <option value="">Todos</option>
+          <option value="BORRADOR">Borrador</option>
+          <option value="CONFIRMADO">Confirmado</option>
+          <option value="ANULADO">Anulado</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="desde">Desde</label
+        ><input id="desde" type="date" name="desde" [(ngModel)]="filtros.desde" />
+      </div>
+      <div class="field">
+        <label for="hasta">Hasta</label
+        ><input id="hasta" type="date" name="hasta" [(ngModel)]="filtros.hasta" />
+      </div>
+      <button class="button secondary" [disabled]="ocupado()">Consultar</button>
+    </form>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Fecha / vencimiento</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Saldo</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (venta of listado(); track venta.id) {
+            <tr>
+              <td>
+                <strong>{{ venta.numero || 'Borrador' }}</strong
+                ><br />{{ nombres[venta.tipo] }} · {{ venta.estado }}
+              </td>
+              <td>{{ venta.fecha }}<br />{{ venta.vencimiento }}</td>
+              <td>{{ venta.cliente }}</td>
+              <td>{{ importe(venta.total) }}</td>
+              <td>{{ importe(venta.saldo) }}</td>
+              <td>
+                <button class="text-button" [disabled]="ocupado()" (click)="abrir(venta.id)">
+                  Abrir
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">
+                {{ ocupado() ? 'Consultando…' : 'No hay documentos para estos filtros.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span>{{ total() }} documentos · Página {{ pagina() + 1 }}</span
+      ><button
+        class="button secondary small"
+        (click)="cambiarPagina(pagina() - 1)"
+        [disabled]="ocupado() || pagina() === 0"
+      >
+        Anterior</button
+      ><button
+        class="button secondary small"
+        (click)="cambiarPagina(pagina() + 1)"
+        [disabled]="ocupado() || (pagina() + 1) * 25 >= total()"
+      >
+        Siguiente
+      </button>
+    </div>
+  </section>
+  <section class="panel billing-form billing-document">
+    <div class="panel-toolbar">
+      <div>
+        <h3>{{ documento?.numero || 'Nuevo borrador' }} · {{ nombres[formulario.tipo] }}</h3>
+        <p>
+          {{ documento?.estado || 'BORRADOR' }}
+          @if (modificado) {
+            · Cambios sin guardar
+          }
+        </p>
+      </div>
+      @if (documento) {
+        <button class="button secondary" (click)="imprimir()" [disabled]="ocupado() || modificado">
+          Imprimir / PDF
+        </button>
+      }
+    </div>
+    @if (formulario.documentoOrigenId) {
+      <p class="field-help">
+        Documento de origen:
+        <button
+          class="text-button"
+          (click)="abrir(formulario.documentoOrigenId)"
+          [disabled]="ocupado()"
+        >
+          Consultar original
+        </button>
+      </p>
+    }
+    @if (editable) {
+      <div class="billing-filters">
+        <div class="field">
+          <label for="buscar-cliente">Buscar cliente</label
+          ><input
+            id="buscar-cliente"
+            [(ngModel)]="busquedaCliente"
+            maxlength="100"
+            placeholder="Nombre o identificación"
+          />
+        </div>
+        <div class="field">
+          <label for="buscar-concepto">Buscar concepto</label
+          ><input
+            id="buscar-concepto"
+            [(ngModel)]="busquedaProducto"
+            maxlength="100"
+            placeholder="Código o nombre"
+          />
+        </div>
+        <button
+          class="button secondary"
+          (click)="buscarOpciones()"
+          [disabled]="ocupado() || buscando()"
+        >
+          Buscar opciones
+        </button>
+      </div>
+      <p class="field-help">
+        Hasta 50 resultados por búsqueda. Solo clientes activos con categoría Cliente o Cliente y
+        proveedor.
+        <a [routerLink]="['/empresas', empresa, 'facturacion', 'clientes']">Registrar cliente</a> ·
+        <a [routerLink]="['/empresas', empresa, 'facturacion', 'productos-y-servicios']"
+          >Crear concepto</a
+        >
+      </p>
+    }
+    <form
+      #formularioVenta="ngForm"
+      (ngSubmit)="guardar()"
+      (input)="modificado = true"
+      (change)="modificado = true"
+    >
+      <fieldset [disabled]="ocupado() || !editable">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="cliente-venta">Cliente *</label
+            ><select
+              id="cliente-venta"
+              name="cliente"
+              [(ngModel)]="formulario.clienteId"
+              required
+              [disabled]="!!formulario.documentoOrigenId"
+            >
+              <option value="">Selecciona cliente</option>
+              @for (cliente of clientes(); track cliente.id) {
+                <option [value]="cliente.id">{{ cliente.documento }} · {{ cliente.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div class="field">
+            <label for="fecha-venta">Fecha *</label
+            ><input
+              id="fecha-venta"
+              type="date"
+              name="fecha"
+              [(ngModel)]="formulario.fecha"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="vence-venta">Vencimiento *</label
+            ><input
+              id="vence-venta"
+              type="date"
+              name="vencimiento"
+              [(ngModel)]="formulario.vencimiento"
+              [min]="formulario.fecha"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="autor-venta">Elaborado por *</label
+            ><input
+              id="autor-venta"
+              name="elaboradoPor"
+              [(ngModel)]="formulario.elaboradoPor"
+              required
+              maxlength="100"
+            />
+          </div>
+          <div class="field">
+            <label for="referencia-venta">Referencia comercial</label
+            ><input
+              id="referencia-venta"
+              name="referencia"
+              [(ngModel)]="formulario.referencia"
+              maxlength="300"
+            />
+          </div>
+        </div>
+        <div class="billing-lines">
+          @for (linea of lineas; track $index; let i = $index) {
+            <div class="billing-line">
+              <div class="field wide">
+                <label [for]="'producto-' + i">Concepto {{ i + 1 }} *</label
+                ><select
+                  [id]="'producto-' + i"
+                  [name]="'producto-' + i"
+                  [(ngModel)]="linea.productoId"
+                  (ngModelChange)="cambiarProducto(i)"
+                  required
+                >
+                  <option value="">Selecciona concepto</option>
+                  @if (linea.productoId) {
+                    <option [value]="linea.productoId">
+                      {{ linea.codigo }} · {{ linea.descripcion }}
+                    </option>
+                  }
+                  @for (producto of productos(); track producto.id) {
+                    <option [value]="producto.id">
+                      {{ producto.codigo }} · {{ producto.nombre }}
+                    </option>
+                  }
+                </select>
+              </div>
+              <div class="field">
+                <label [for]="'cantidad-' + i">Cantidad *</label
+                ><input
+                  [id]="'cantidad-' + i"
+                  [name]="'cantidad-' + i"
+                  [(ngModel)]="linea.cantidad"
+                  inputmode="decimal"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label [for]="'precio-' + i">Precio *</label
+                ><input
+                  [id]="'precio-' + i"
+                  [name]="'precio-' + i"
+                  [(ngModel)]="linea.precio"
+                  inputmode="decimal"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label [for]="'descuento-' + i">Descuento %</label
+                ><input
+                  [id]="'descuento-' + i"
+                  [name]="'descuento-' + i"
+                  [(ngModel)]="linea.descuento"
+                  inputmode="decimal"
+                  required
+                />
+              </div>
+              <div class="field wide">
+                <label [for]="'descripcion-' + i">Descripción *</label
+                ><input
+                  [id]="'descripcion-' + i"
+                  [name]="'descripcion-' + i"
+                  [(ngModel)]="linea.descripcion"
+                  maxlength="300"
+                  required
+                />
+              </div>
+              <div class="billing-line-total">
+                <span>{{ linea.tratamientoIva }} · IVA {{ linea.tarifaIva }}%</span
+                ><strong>{{ totalLinea(linea) }}</strong>
+              </div>
+              @if (editable) {
+                <button
+                  type="button"
+                  class="text-button"
+                  (click)="quitarLinea(i)"
+                  [disabled]="lineas.length === 1"
+                >
+                  Quitar línea
+                </button>
+              }
+            </div>
+          }
+        </div>
+        @if (editable) {
+          <button
+            type="button"
+            class="button secondary"
+            (click)="agregarLinea()"
+            [disabled]="lineas.length >= 100"
+          >
+            Agregar concepto
+          </button>
+        }
+        <div class="field">
+          <label for="observaciones-venta">Observaciones / motivo</label
+          ><textarea
+            id="observaciones-venta"
+            name="observaciones"
+            [(ngModel)]="formulario.observaciones"
+            maxlength="1000"
+            rows="3"
+          ></textarea>
+        </div>
+      </fieldset>
+      <div class="journal-totals">
+        @let calculo = totales();
+        <div>
+          <span>Bruto</span><strong>{{ centavos(calculo.bruto) }}</strong>
+        </div>
+        <div>
+          <span>Descuentos</span><strong>{{ centavos(calculo.descuento) }}</strong>
+        </div>
+        <div>
+          <span>Base</span><strong>{{ centavos(calculo.base) }}</strong>
+        </div>
+        <div>
+          <span>IVA</span><strong>{{ centavos(calculo.iva) }}</strong>
+        </div>
+        <div class="balanced">
+          <span>Total COP</span><strong>{{ centavos(calculo.total) }}</strong>
+        </div>
+      </div>
+      @if (editable) {
+        <div class="form-actions">
+          <button class="button primary" [disabled]="ocupado() || formularioVenta.invalid">
+            Guardar borrador</button
+          ><button
+            type="button"
+            class="button secondary"
+            (click)="confirmar()"
+            [disabled]="
+              ocupado() ||
+              modificado ||
+              !documento ||
+              !calculo.valido ||
+              calculo.total.toString() === '0'
+            "
+          >
+            Confirmar documento interno
+          </button>
+        </div>
+        <p class="field-help">
+          Guarda antes de confirmar. Se conservarán los datos e importes del documento. Los pagos se
+          registran después de confirmar.
+        </p>
+      }
+    </form>
+    @if (documento; as d) {
+      @if (d.comprobanteId) {
+        <p class="field-help">
+          Comprobante contable generado.
+          <a
+            [routerLink]="['/empresas', empresa, 'contabilidad', 'comprobantes']"
+            [queryParams]="{ comprobante: d.comprobanteId }"
+            >Consultar en Contabilidad</a
+          >.
+        </p>
+      } @else if (d.estado !== 'BORRADOR') {
+        <p class="field-help">
+          Este documento no generó comprobante: la contabilización automática estaba desactivada.
+        </p>
+      }
+      @if (d.estado === 'CONFIRMADO' && d.tipo !== 'NOTA_CREDITO') {
+        <div class="billing-actions">
+          @if (d.tipo === 'FACTURA') {
+            <button class="button secondary" (click)="nuevaNotaDebito()" [disabled]="ocupado()">
+              Crear nota débito
+            </button>
+          }
+          <button
+            class="button secondary"
+            (click)="prepararCredito()"
+            [disabled]="ocupado() || seleccionado()!.recaudado !== '0.00'"
+          >
+            Revertir total con nota crédito
+          </button>
+        </div>
+        <p class="field-help">
+          La nota crédito de este módulo revierte el total. Antes debes anular los recaudos activos.
+          No genera reembolso bancario.
+        </p>
+      }
+    }
+  </section>
+  @if (seleccionado(); as detalle) {
+    @if (detalle.documento.estado !== 'BORRADOR' && detalle.documento.tipo !== 'NOTA_CREDITO') {
+      <section class="panel billing-form">
+        <h3>Recaudos</h3>
+        <p>
+          Recaudado: <strong>{{ importe(detalle.recaudado) }}</strong> · Saldo actual:
+          <strong>{{ importe(detalle.saldo) }}</strong>
+        </p>
+        @if (detalle.documento.estado === 'CONFIRMADO' && detalle.saldo !== '0.00') {
+          <form #formularioRecaudo="ngForm" (ngSubmit)="pagar()">
+            <fieldset [disabled]="ocupado()">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="pago-fecha">Fecha *</label
+                  ><input
+                    type="date"
+                    id="pago-fecha"
+                    name="fecha"
+                    [(ngModel)]="formularioPago.fecha"
+                    [min]="detalle.documento.fecha"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="pago-importe">Importe COP *</label
+                  ><input
+                    id="pago-importe"
+                    name="importe"
+                    [(ngModel)]="formularioPago.importe"
+                    inputmode="decimal"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="pago-medio">Medio *</label
+                  ><select id="pago-medio" name="medio" [(ngModel)]="formularioPago.medio">
+                    <option value="EFECTIVO">Efectivo</option>
+                    <option value="TRANSFERENCIA">Transferencia</option>
+                    <option value="TARJETA">Tarjeta</option>
+                    <option value="OTRO">Otro</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="pago-referencia">Referencia del recaudo *</label
+                  ><input
+                    id="pago-referencia"
+                    name="referencia"
+                    [(ngModel)]="formularioPago.referencia"
+                    maxlength="300"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="pago-autor">Elaborado por *</label
+                  ><input
+                    id="pago-autor"
+                    name="elaboradoPor"
+                    [(ngModel)]="formularioPago.elaboradoPor"
+                    maxlength="100"
+                    required
+                  />
+                </div>
+              </div>
+              <button class="button primary" [disabled]="formularioRecaudo.invalid || ocupado()">
+                Registrar recaudo
+              </button>
+            </fieldset>
+          </form>
+        }
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Referencia</th>
+                <th>Importe</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (pago of detalle.pagos; track pago.id) {
+                <tr>
+                  <td>{{ pago.fecha }}</td>
+                  <td>
+                    {{ pago.referencia }}<br />{{ pago.medio }}
+                    @if (pago.anulado) {
+                      <br />{{ pago.fechaAnulacion }} · {{ pago.motivoAnulacion }} ·
+                      {{ pago.anuladoPor }}
+                    }
+                  </td>
+                  <td>{{ importe(pago.importe) }}</td>
+                  <td>{{ pago.anulado ? 'Anulado' : 'Registrado' }}</td>
+                  <td>
+                    @if (!pago.anulado) {
+                      <button
+                        class="text-button"
+                        (click)="prepararAnulacion(pago)"
+                        [disabled]="ocupado()"
+                      >
+                        Anular recaudo
+                      </button>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5">No hay recaudos registrados.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  }
+  @if (accionReversion) {
+    <section class="panel billing-form">
+      <h3>
+        {{ accionReversion === 'credito' ? 'Nota crédito de reversión total' : 'Anular recaudo' }}
+      </h3>
+      <form #formularioReversion="ngForm" (ngSubmit)="revertir()">
+        <fieldset [disabled]="ocupado()">
+          <div class="form-grid">
+            <div class="field">
+              <label for="reversion-fecha">Fecha *</label
+              ><input
+                type="date"
+                id="reversion-fecha"
+                name="fecha"
+                [(ngModel)]="reversion.fecha"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="reversion-autor">Elaborado por *</label
+              ><input
+                id="reversion-autor"
+                name="autor"
+                [(ngModel)]="reversion.elaboradoPor"
+                maxlength="100"
+                required
+              />
+            </div>
+            <div class="field full">
+              <label for="reversion-motivo">Motivo *</label
+              ><textarea
+                id="reversion-motivo"
+                name="motivo"
+                [(ngModel)]="reversion.motivo"
+                required
+                maxlength="1000"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="button primary" [disabled]="formularioReversion.invalid || ocupado()">
+              {{
+                accionReversion === 'credito' ? 'Generar nota crédito' : 'Anular recaudo'
+              }}</button
+            ><button type="button" class="button secondary" (click)="accionReversion = null">
+              Cancelar
+            </button>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+  }
+</div>
+@if (documento; as d) {
+  <article class="voucher-print">
+    <header>
+      <h1>{{ d.emisor.nombre }}</h1>
+      <p>NIT {{ d.emisor.nit }}-{{ d.emisor.digitoVerificacion }}</p>
+      <h2>{{ nombres[d.tipo] }} · {{ d.numero || 'BORRADOR SIN CONFIRMAR' }}</h2>
+      <p>
+        <strong>DOCUMENTO INTERNO — SIN VALIDACIÓN DIAN. No constituye factura electrónica.</strong>
+      </p>
+      <p>
+        Estado: {{ d.estado }} · Moneda COP · Fecha: {{ d.fecha }} · Vencimiento:
+        {{ d.vencimiento }}
+      </p>
+    </header>
+    <p>
+      <strong>Cliente:</strong> {{ d.cliente.nombre }} · {{ d.cliente.tipoDocumento }}
+      {{ d.cliente.documento }}
+      @if (d.cliente.digitoVerificacion) {
+        -{{ d.cliente.digitoVerificacion }}
+      }
+    </p>
+    <p>{{ d.cliente.direccion }} · {{ d.cliente.correo }}</p>
+    <p>Referencia: {{ d.referencia }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Cant.</th>
+          <th>Precio</th>
+          <th>Desc.</th>
+          <th>IVA</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of d.lineas; track $index) {
+          <tr>
+            <td>{{ l.codigo }} · {{ l.descripcion }}</td>
+            <td>{{ l.cantidad }} {{ l.unidad }}</td>
+            <td>{{ importe(l.precio) }}</td>
+            <td>{{ importe(l.descuento) }}</td>
+            <td>{{ l.tratamientoIva }} {{ l.tarifaIva }}%<br />{{ importe(l.iva) }}</td>
+            <td>{{ importe(l.total) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <p>
+      Bruto: {{ importe(d.totales.bruto) }} · Descuentos: {{ importe(d.totales.descuento) }} · Base:
+      {{ importe(d.totales.base) }} · IVA: {{ importe(d.totales.iva) }}
+    </p>
+    <h2>Total COP: {{ importe(d.totales.total) }}</h2>
+    <p>Observaciones: {{ d.observaciones }}</p>
+    <p>{{ d.configuracion.condiciones }}</p>
+    <p>Elaborado por: {{ d.elaboradoPor }} (dato declarado, sin firma autenticada).</p>
+  </article>
+}

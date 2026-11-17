@@ -1,7 +1,7 @@
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CompanyContext } from '../workspace/company-context';
 import {
@@ -23,6 +23,7 @@ import { apiErrorMessage } from '../../core/api-error';
 export class JournalsPage {
   readonly context = inject(CompanyContext);
   private readonly api = inject(JournalsApi);
+  private readonly route = inject(ActivatedRoute);
   private readonly destroy = inject(DestroyRef);
   private readonly fb = inject(FormBuilder).nonNullable;
   readonly items = signal<JournalSummary[]>([]);
@@ -92,6 +93,8 @@ export class JournalsPage {
           this.query.set('');
           this.loadList(0);
           this.loadOptions();
+          const id = this.route.snapshot.queryParamMap.get('comprobante');
+          if (id) this.open(id);
         });
     });
   }

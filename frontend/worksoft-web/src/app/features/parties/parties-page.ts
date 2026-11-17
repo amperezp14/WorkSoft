@@ -2,17 +2,19 @@ import { Component, DestroyRef, effect, inject, signal, untracked } from '@angul
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+import { NavegacionFacturacion } from '../facturacion/navegacion-facturacion';
 import { CompanyContext } from '../workspace/company-context';
 import { PartiesApi, ThirdParty, DocumentType, PartyCategory } from './parties.api';
 import { apiErrorMessage } from '../../core/api-error';
 @Component({
   selector: 'app-parties-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, NavegacionFacturacion],
   templateUrl: './parties-page.html',
 })
 export class PartiesPage {
   readonly context = inject(CompanyContext);
+  readonly clientesFacturacion = !!inject(ActivatedRoute).snapshot.data['clientes'];
   private readonly api = inject(PartiesApi);
   private readonly destroy = inject(DestroyRef);
   readonly items = signal<ThirdParty[]>([]);
@@ -82,7 +84,7 @@ export class PartiesPage {
       documentNumber: '',
       verificationDigit: '',
       name: '',
-      category: 'OTHER',
+      category: this.clientesFacturacion ? 'CUSTOMER' : 'OTHER',
       email: '',
       phone: '',
       address: '',

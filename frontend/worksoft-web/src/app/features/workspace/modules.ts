@@ -48,7 +48,7 @@ export const COMPANY_MODULES: readonly CompanyModule[] = [
       {
         id: 'facturas-de-venta',
         title: 'Facturas de venta',
-        description: 'Prepara el espacio para crear y consultar documentos de venta.',
+        description: 'Crea ventas internas, registra recaudos y consulta su historial.',
       },
       {
         id: 'clientes',
@@ -63,7 +63,17 @@ export const COMPANY_MODULES: readonly CompanyModule[] = [
       {
         id: 'notas',
         title: 'Notas crédito y débito',
-        description: 'Accede al espacio de ajustes sobre documentos de venta.',
+        description: 'Crea notas débito y revierte documentos con notas crédito internas.',
+      },
+      {
+        id: 'cartera',
+        title: 'Cartera y recaudos',
+        description: 'Consulta saldos, documentos vencidos y pagos de tus clientes.',
+      },
+      {
+        id: 'configuracion',
+        title: 'Configuración',
+        description: 'Configura consecutivos internos y contabilización automática.',
       },
     ],
   },

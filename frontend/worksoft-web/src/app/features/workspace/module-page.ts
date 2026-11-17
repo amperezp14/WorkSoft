@@ -18,7 +18,7 @@ import { Icon } from '../../shared/icon';
       <span class="module-stage">{{
         module.path === 'contabilidad'
           ? 'Cuentas, terceros y comprobantes disponibles'
-          : 'En preparación'
+          : 'Ventas, conceptos, notas y recaudos disponibles'
       }}</span>
     </div>
     <div class="module-layout">
@@ -74,7 +74,7 @@ import { Icon } from '../../shared/icon';
           {{
             module.path === 'facturacion'
               ? 'La emisión electrónica y la validación ante la DIAN se incorporarán en una etapa posterior.'
-              : 'El registro de comprobantes, los cálculos y los informes se incorporarán en una etapa posterior.'
+              : 'Cuentas, terceros y comprobantes disponibles. Los informes contables se incorporarán en una etapa posterior.'
           }}
         </p>
       </section>

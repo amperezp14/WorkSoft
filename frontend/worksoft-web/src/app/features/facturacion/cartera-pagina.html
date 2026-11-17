@@ -1,0 +1,115 @@
+<app-navegacion-facturacion />
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">FACTURACIÓN · COP</span>
+    <h2>Cartera y recaudos</h2>
+    <p>Saldos actuales de ventas y notas débito confirmadas. No es un balance contable.</p>
+  </div>
+</div>
+@if (error()) {
+  <div class="alert error" role="alert">{{ error() }}</div>
+}
+<form class="billing-filters panel" (ngSubmit)="cargar()">
+  <div class="field">
+    <label for="cartera-corte">Fecha para calcular vencidos</label
+    ><input id="cartera-corte" type="date" name="corte" [(ngModel)]="corte" required />
+  </div>
+  <div class="field">
+    <label for="cartera-busqueda">Buscar documento</label
+    ><input
+      id="cartera-busqueda"
+      name="busqueda"
+      [(ngModel)]="busqueda"
+      maxlength="100"
+      placeholder="Cliente o número"
+    />
+  </div>
+  <button class="button secondary" [disabled]="ocupado()">Actualizar</button>
+</form>
+@if (resumen(); as r) {
+  <div class="billing-summary">
+    <section class="panel">
+      <span>Ventas netas vigentes</span><strong>{{ importe(r.ventas) }}</strong>
+    </section>
+    <section class="panel">
+      <span>IVA de documentos vigentes</span><strong>{{ importe(r.iva) }}</strong>
+    </section>
+    <section class="panel">
+      <span>Recaudado</span><strong>{{ importe(r.recaudado) }}</strong>
+    </section>
+    <section class="panel">
+      <span>Pendiente · {{ r.documentosPendientes }} documentos</span
+      ><strong>{{ importe(r.pendiente) }}</strong>
+    </section>
+    <section class="panel">
+      <span>Vencido antes de {{ corte }}</span
+      ><strong>{{ importe(r.vencido) }}</strong>
+    </section>
+  </div>
+}
+<p class="field-help">
+  El resumen corresponde a toda la empresa; la búsqueda filtra el listado. La fecha solo cambia la
+  clasificación de vencidos, no reconstruye saldos históricos.
+</p>
+<section class="panel">
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Documento</th>
+          <th>Cliente</th>
+          <th>Vencimiento</th>
+          <th>Total</th>
+          <th>Recaudado</th>
+          <th>Saldo</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (venta of ventas(); track venta.id) {
+          <tr>
+            <td>{{ venta.numero }}</td>
+            <td>{{ venta.cliente }}</td>
+            <td>{{ venta.vencimiento }}</td>
+            <td>{{ importe(venta.total) }}</td>
+            <td>{{ importe(venta.recaudado) }}</td>
+            <td>{{ importe(venta.saldo) }}</td>
+            <td>
+              <a
+                class="text-button"
+                [routerLink]="[
+                  '/empresas',
+                  contexto.company()!.id,
+                  'facturacion',
+                  'facturas-de-venta',
+                ]"
+                [queryParams]="{ documento: venta.id }"
+                >Abrir / recaudar</a
+              >
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7">{{ ocupado() ? 'Consultando…' : 'No hay documentos.' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination">
+    <span>Página {{ pagina() + 1 }}</span
+    ><button
+      class="button secondary small"
+      (click)="cargar(pagina() - 1)"
+      [disabled]="ocupado() || pagina() === 0"
+    >
+      Anterior</button
+    ><button
+      class="button secondary small"
+      (click)="cargar(pagina() + 1)"
+      [disabled]="ocupado() || (pagina() + 1) * 25 >= total()"
+    >
+      Siguiente
+    </button>
+  </div>
+</section>

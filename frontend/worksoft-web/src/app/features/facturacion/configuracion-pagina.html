@@ -1,0 +1,119 @@
+<app-navegacion-facturacion />
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">FACTURACIÓN</span>
+    <h2>Configuración de la empresa</h2>
+    <p>Numeración interna y conexión con contabilidad.</p>
+  </div>
+  <button class="button secondary" (click)="cargar()" [disabled]="ocupado() || cargando()">
+    Actualizar
+  </button>
+</div>
+@if (error()) {
+  <div class="alert error" role="alert">{{ error() }}</div>
+}
+@if (mensaje()) {
+  <div class="alert success" role="status">{{ mensaje() }}</div>
+}
+@if (valores; as v) {
+  <section class="panel billing-form">
+    <form #formulario="ngForm" (ngSubmit)="guardar()">
+      <fieldset [disabled]="ocupado() || cargando()">
+        <h3>Consecutivos internos por año</h3>
+        <p class="field-help">
+          No son resoluciones ni numeración autorizada por la DIAN. Cambiar un prefijo no reinicia
+          el consecutivo anual.
+        </p>
+        <div class="form-grid">
+          <div class="field">
+            <label for="prefijo-factura">Ventas *</label
+            ><input
+              id="prefijo-factura"
+              name="prefijoFactura"
+              [(ngModel)]="v.prefijoFactura"
+              required
+              pattern="[A-Z][A-Z0-9]{0,7}"
+              maxlength="8"
+            />
+          </div>
+          <div class="field">
+            <label for="prefijo-credito">Notas crédito *</label
+            ><input
+              id="prefijo-credito"
+              name="prefijoCredito"
+              [(ngModel)]="v.prefijoCredito"
+              required
+              pattern="[A-Z][A-Z0-9]{0,7}"
+              maxlength="8"
+            />
+          </div>
+          <div class="field">
+            <label for="prefijo-debito">Notas débito *</label
+            ><input
+              id="prefijo-debito"
+              name="prefijoDebito"
+              [(ngModel)]="v.prefijoDebito"
+              required
+              pattern="[A-Z][A-Z0-9]{0,7}"
+              maxlength="8"
+            />
+          </div>
+          <div class="field full">
+            <label for="condiciones">Condiciones y pie del documento</label
+            ><textarea
+              id="condiciones"
+              name="condiciones"
+              [(ngModel)]="v.condiciones"
+              maxlength="1000"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+        <h3>Contabilización automática</h3>
+        <label class="check-field"
+          ><input type="checkbox" name="contabilizar" [(ngModel)]="v.contabilizar" /> Generar
+          comprobantes al confirmar ventas, notas y pagos</label
+        >
+        <p class="field-help">
+          Actívala después de configurar cuatro cuentas diferentes, activas, sin hijas y que
+          permitan movimientos. Cada recaudo usará la cuenta de caja/bancos definida aquí. Elige
+          cuentas acordes con la naturaleza de tu operación.
+        </p>
+        <div class="billing-search">
+          <label for="buscar-cuenta">Buscar cuentas</label
+          ><input
+            id="buscar-cuenta"
+            name="busqueda"
+            [(ngModel)]="busqueda"
+            maxlength="100"
+            placeholder="Código o nombre"
+          /><button type="button" class="button secondary" (click)="buscar()">Buscar</button>
+        </div>
+        <div class="form-grid">
+          @for (campo of campos; track campo.clave) {
+            <div class="field">
+              <label [for]="campo.clave">{{ campo.nombre }}</label
+              ><select
+                [id]="campo.clave"
+                [name]="campo.clave"
+                [(ngModel)]="v[campo.clave]"
+                [required]="v.contabilizar"
+              >
+                <option [ngValue]="null">Selecciona cuenta</option>
+                @if (v[campo.clave] && !tieneCuenta(v[campo.clave])) {
+                  <option [ngValue]="v[campo.clave]">Conservar cuenta configurada</option>
+                }
+                @for (cuenta of cuentas(); track cuenta.id) {
+                  <option [ngValue]="cuenta.id">{{ cuenta.codigo }} · {{ cuenta.nombre }}</option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+        <button class="button primary" [disabled]="formulario.invalid || ocupado()">
+          Guardar configuración
+        </button>
+      </fieldset>
+    </form>
+  </section>
+}

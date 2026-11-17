@@ -7,6 +7,20 @@ export function apiErrorMessage(error: unknown): string {
   if (error.status === 0)
     return 'No hay conexión con el servidor. Comprueba tu conexión y vuelve a intentarlo.';
   switch (error.error?.code) {
+    case 'FACTURACION_NO_ENCONTRADA':
+      return 'El registro de facturación no está disponible en esta empresa.';
+    case 'PRODUCTO_DUPLICADO':
+      return 'Ya existe un concepto con ese código en esta empresa.';
+    case 'CONFIGURACION_FACTURACION_INVALIDA':
+      return 'Revisa los prefijos: no pueden reutilizarse para otro tipo de documento. Si activas contabilidad, selecciona cuatro cuentas diferentes, activas, sin hijas y que permitan movimientos.';
+    case 'REFERENCIA_FACTURACION_INVALIDA':
+      return 'Revisa que el cliente sea activo y tenga categoría Cliente o Cliente y proveedor, los conceptos estén activos y el documento original siga confirmado.';
+    case 'DOCUMENTO_NO_EDITABLE':
+      return 'El documento confirmado o anulado no admite modificaciones.';
+    case 'REVERSO_FACTURACION_INVALIDO':
+      return 'La reversión total requiere un documento confirmado sin recaudos activos. Anula primero los recaudos.';
+    case 'PAGO_FACTURACION_INVALIDO':
+      return 'Revisa el saldo y la fecha: el recaudo debe ser positivo, no superar el saldo y corresponder a un documento confirmado.';
     case 'PARTY_CONFLICT':
       return 'La identificación ya está registrada en esta empresa.';
     case 'PARTY_NOT_FOUND':

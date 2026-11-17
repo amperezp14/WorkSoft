@@ -26,7 +26,12 @@ public class ApiErrors {
         switch (ex.code()) {
           case VALIDATION_ERROR, INVALID_JOURNAL_LINE -> 400;
           case FORBIDDEN -> 403;
-          case COMPANY_NOT_FOUND, ACCOUNT_NOT_FOUND, PARTY_NOT_FOUND, VOUCHER_NOT_FOUND -> 404;
+          case COMPANY_NOT_FOUND,
+              ACCOUNT_NOT_FOUND,
+              PARTY_NOT_FOUND,
+              VOUCHER_NOT_FOUND,
+              FACTURACION_NO_ENCONTRADA ->
+              404;
           case COMPANY_CONFLICT,
               IDEMPOTENCY_CONFLICT,
               ACCOUNT_CONFLICT,
@@ -37,12 +42,30 @@ public class ApiErrors {
               VOUCHER_POSTED,
               POSTING_REFERENCE_INVALID ->
               409;
+          case PRODUCTO_DUPLICADO,
+              CONFIGURACION_FACTURACION_INVALIDA,
+              REFERENCIA_FACTURACION_INVALIDA,
+              DOCUMENTO_NO_EDITABLE,
+              REVERSO_FACTURACION_INVALIDO,
+              PAGO_FACTURACION_INVALIDO ->
+              409;
           case VOUCHER_UNBALANCED -> 422;
           case TEMPORARILY_UNAVAILABLE -> 503;
         };
     String title =
         switch (ex.code()) {
           case VALIDATION_ERROR -> "Solicitud inválida";
+          case FACTURACION_NO_ENCONTRADA -> "Registro de facturación no encontrado";
+          case PRODUCTO_DUPLICADO -> "Ya existe un producto con ese código";
+          case CONFIGURACION_FACTURACION_INVALIDA ->
+              "Revisa los prefijos reservados y las cuatro cuentas contables de facturación";
+          case REFERENCIA_FACTURACION_INVALIDA ->
+              "Revisa el cliente, productos y documento de origen de esta empresa";
+          case DOCUMENTO_NO_EDITABLE -> "Solo los borradores admiten modificaciones";
+          case REVERSO_FACTURACION_INVALIDO ->
+              "La reversión total requiere un documento confirmado sin pagos activos";
+          case PAGO_FACTURACION_INVALIDO ->
+              "Revisa el estado, fecha y saldo disponible del documento";
           case FORBIDDEN -> "Operación no permitida";
           case COMPANY_NOT_FOUND -> "Empresa no encontrada";
           case PARTY_NOT_FOUND -> "Tercero no encontrado";

@@ -1,7 +1,7 @@
 # WorkSoft
 
 ERP en construcción para empresas colombianas. La aplicación guarda empresas y
-su plan de cuentas, terceros y comprobantes contables en PostgreSQL, sin Keycloak ni autenticación externa.
+su plan de cuentas, terceros, comprobantes contables y documentos de venta en PostgreSQL, sin Keycloak ni autenticación externa.
 
 ## Arranque
 
@@ -41,6 +41,7 @@ La referencia es parcial, basada en el PUC para comerciantes del Decreto 2650 de
 1993 y revisada para este desarrollo en 2026; no representa un PUC oficial nuevo
 ni sustituye la definición del catálogo propio según el marco contable aplicable.
 
+- [Facturación: ventas, conceptos, notas, recaudos y cartera](docs/run-facturacion.md)
 - [Terceros y comprobantes: formularios, contabilización y PDF](docs/run-third-parties-journals.md)
 - [Conexión y uso del plan de cuentas](docs/run-postgres-accounting.md)
 - [Fuentes y alcance de la referencia](docs/accounting/puc-reference.md)

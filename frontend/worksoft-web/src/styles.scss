@@ -2022,3 +2022,178 @@ dd {
     font-size: 8pt;
   }
 }
+
+.billing-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid #dce5e3;
+  padding-bottom: 12px;
+}
+.billing-nav a {
+  padding: 9px 13px;
+  border-radius: 7px;
+  color: #456367;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 13px;
+}
+.billing-nav a.selected,
+.billing-nav a:hover {
+  background: #e4f2ec;
+  color: #176553;
+}
+.billing-notice {
+  border: 1px solid #dfd5ae;
+  background: #fffbef;
+  color: #6c5c2e;
+  line-height: 1.6;
+}
+.billing-form {
+  padding: 26px;
+  margin-top: 26px;
+}
+.billing-form h3 {
+  margin-bottom: 16px;
+}
+.billing-form fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.billing-form .form-grid {
+  margin: 20px 0;
+}
+.billing-form .full {
+  grid-column: 1/-1;
+}
+.billing-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 20px;
+}
+.billing-filters .field {
+  flex: 1;
+  min-width: 130px;
+}
+.billing-filters input,
+.billing-filters select {
+  width: 100%;
+}
+.billing-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 20px 0;
+}
+.billing-lines {
+  display: grid;
+  gap: 16px;
+  margin: 26px 0;
+}
+.billing-line {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  border: 1px solid #dce5e3;
+  border-radius: 10px;
+  padding: 20px;
+}
+.billing-line .wide {
+  grid-column: span 2;
+}
+.billing-line-total {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+  font-size: 12px;
+  color: #657e80;
+}
+.billing-line-total strong {
+  font-size: 16px;
+  color: #193d42;
+}
+.billing-document .journal-totals {
+  flex-wrap: wrap;
+}
+.billing-document .journal-totals > div {
+  min-width: 125px;
+  flex: 1;
+}
+.billing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0 10px;
+}
+.billing-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.billing-summary section {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.billing-summary span {
+  font-size: 12px;
+  color: #657e80;
+}
+.billing-summary strong {
+  font-size: 22px;
+  color: #193d42;
+}
+.billing-form .field input,
+.billing-form .field select,
+.billing-form .field textarea {
+  max-width: 100%;
+  width: 100%;
+}
+@media (max-width: 720px) {
+  .billing-line {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 14px;
+  }
+  .billing-form {
+    padding: 16px;
+  }
+  .billing-filters .field {
+    min-width: 100%;
+  }
+  .billing-nav a {
+    font-size: 12px;
+    padding: 8px;
+  }
+  .billing-search input {
+    min-width: 0;
+    flex: 1;
+  }
+}
+.billing-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.billing-form .check-field {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+@media (max-width: 600px) {
+  .billing-form .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .billing-document .journal-totals > div {
+    min-width: 110px;
+  }
+}

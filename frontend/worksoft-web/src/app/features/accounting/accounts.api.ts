@@ -38,6 +38,9 @@ export class AccountsApi {
     const params = new HttpParams().set('q', query).set('page', page).set('size', 25);
     return this.http.get<AccountPage>(this.url(company), { params });
   }
+  get(company: string, id: string): Observable<Account> {
+    return this.http.get<Account>(this.url(company) + '/' + encodeURIComponent(id));
+  }
   create(company: string, values: AccountValues): Observable<Account> {
     return this.http.post<Account>(this.url(company), values);
   }

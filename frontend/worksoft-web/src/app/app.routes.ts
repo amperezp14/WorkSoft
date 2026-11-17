@@ -50,6 +50,45 @@ export const routes: Routes = [
         loadComponent: modulePage,
         data: { module: 'contabilidad' },
       },
+      {
+        path: 'facturacion/facturas-de-venta',
+        canDeactivate: [
+          (componente: import('./features/facturacion/documentos-pagina').DocumentosPagina) =>
+            componente.canLeave(),
+        ],
+        loadComponent: () =>
+          import('./features/facturacion/documentos-pagina').then((m) => m.DocumentosPagina),
+      },
+      {
+        path: 'facturacion/notas',
+        data: { notas: true },
+        canDeactivate: [
+          (componente: import('./features/facturacion/documentos-pagina').DocumentosPagina) =>
+            componente.canLeave(),
+        ],
+        loadComponent: () =>
+          import('./features/facturacion/documentos-pagina').then((m) => m.DocumentosPagina),
+      },
+      {
+        path: 'facturacion/clientes',
+        data: { clientes: true },
+        loadComponent: () => import('./features/parties/parties-page').then((m) => m.PartiesPage),
+      },
+      {
+        path: 'facturacion/productos-y-servicios',
+        loadComponent: () =>
+          import('./features/facturacion/productos-pagina').then((m) => m.ProductosPagina),
+      },
+      {
+        path: 'facturacion/configuracion',
+        loadComponent: () =>
+          import('./features/facturacion/configuracion-pagina').then((m) => m.ConfiguracionPagina),
+      },
+      {
+        path: 'facturacion/cartera',
+        loadComponent: () =>
+          import('./features/facturacion/cartera-pagina').then((m) => m.CarteraPagina),
+      },
       { path: 'facturacion', loadComponent: modulePage, data: { module: 'facturacion' } },
       { path: 'facturacion/:section', loadComponent: modulePage, data: { module: 'facturacion' } },
       { path: '**', redirectTo: '' },
